@@ -1,0 +1,9 @@
+module KmcUI.Controls
+AnchorToolTip 1.0 AnchorToolTip.qml
+AppBar 1.0 AppBar.qml
+MouseToolTip 1.0 MouseToolTip.qml
+PopupComboxBox 1.0 PopupComboxBox.qml
+TitleBar 1.0 TitleBar.qml
+KeySequenceText 1.0 KeySequenceText.qml
+internal WndMouseToolTip WndMouseToolTip.qml
+internal IconData IconData.qml

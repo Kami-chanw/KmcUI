@@ -1,0 +1,4 @@
+module KmcUI.Window
+FlipableWindow 1.0 FlipableWindow.qml
+ShadowWindow 1.0 ShadowWindow.qml
+internal WindowBackground WindowBackground.qml

@@ -1,0 +1,25 @@
+<RCC>
+    <qresource prefix="/KmcUI">
+        <file>icons/close.svg</file>
+        <file>icons/maximize.svg</file>
+        <file>icons/minimize.svg</file>
+        <file>icons/restore.svg</file>
+        <file>Window/FlipableWindow.qml</file>
+        <file>Window/ShadowWindow.qml</file>
+        <file>Window/WindowBackground.qml</file>
+        <file>Controls/AnchorToolTip.qml</file>
+        <file>Controls/MouseToolTip.qml</file>
+        <file>Controls/PopupComboBox.qml</file>
+        <file>Window/qmldir</file>
+        <file>KmcUI.qml</file>
+        <file>ColorIcon.qml</file>
+        <file>Controls/qmldir</file>
+        <file>qmldir</file>
+        <file>Controls/TitleBar.qml</file>
+        <file>Controls/AppBar.qml</file>
+        <file>Controls/WndMouseToolTip.qml</file>
+        <file>Controls/BubbleToolTip.qml</file>
+        <file>Controls/KeySequenceText.qml</file>
+        <file>Controls/IconData.qml</file>
+    </qresource>
+</RCC>
