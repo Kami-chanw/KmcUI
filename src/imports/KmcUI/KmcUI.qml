@@ -1,7 +1,6 @@
 import QtQuick
 
 QtObject {
-
     enum DragType {
         NoDrag = 0,
         DragTitle,

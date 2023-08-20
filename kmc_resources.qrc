@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/">
+        <file>assets/icons/arrow.svg</file>
+        <file>assets/icons/close.svg</file>
+        <file>assets/icons/maximize.svg</file>
+        <file>assets/icons/minimize.svg</file>
+        <file>assets/icons/restore.svg</file>
+    </qresource>
+</RCC>

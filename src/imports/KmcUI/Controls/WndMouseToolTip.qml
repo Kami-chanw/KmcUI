@@ -73,18 +73,19 @@ Window {
         if (visible) {
             showAnim.restart()
             hideTimer.restart()
-        } else {
-            visible = false
-            opacity = 0
         }
     }
 
     SequentialAnimation {
         id: showAnim
-
+        ScriptAction {
+            script: {
+                control.opacity = 0
+            }
+        }
         PauseAnimation {
             id: showPause
-            duration: 2000
+            duration: 1000
         }
         ScriptAction {
             script: {
