@@ -107,9 +107,6 @@ Item {
                                 control.hoveredIndex = props.currentIndex
                             if (!hovered && control.hoveredIndex === props.currentIndex)
                                 control.hoveredIndex = null
-                            if (hovered)
-                                console.log("name:" + props.currentData + "   childCount" + control.model.rowCount(
-                                                control.model.index(index, 0, parentIndex)))
                             delegateLoader.hoveredChanged()
                         }
                     }

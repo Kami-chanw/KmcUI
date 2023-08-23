@@ -11,9 +11,22 @@ Item {
     // Not like TitleBar etc, WindowBackground is an internal component, so it doesn't need to find window
     required property Window window
     property bool mouseAreaEnabled: true
-    property int margin: 10
+    property int margins: 10
     required property Item contentItem
-    property alias background: mainRect
+    property Item background: Rectangle {
+        id: backgroundRect
+        radius: 4
+        border {
+            width: 1
+            color: Qt.darker(effect.color, 1.5)
+        }
+        Binding {
+            when: control.window.visibility === Window.Maximized
+            backgroundRect.border.width: 0
+            backgroundRect.radius: 0
+        }
+    }
+
     property bool resizable: false
     property int dragType: KmcUI.DragType.DragWindow
     property alias titleButton: title.titleButton
@@ -37,9 +50,9 @@ Item {
                 window.startSystemResize(edgeFlag)
             } else {
                 // drag
-                if (dragType !== KmcUI.DragType.NoDrag && mouseX >= margin
-                        && mouseX <= width - margin && mouseY >= margin
-                        && mouseY <= height - margin) {
+                if (dragType !== KmcUI.DragType.NoDrag && mouseX >= margins
+                        && mouseX <= width - margins && mouseY >= margins
+                        && mouseY <= height - margins) {
                     // is in region?
                     if (dragType === KmcUI.DragType.DragWindow || mouseY <= title.height) {
                         window.startSystemMove()
@@ -53,16 +66,16 @@ Item {
         onPositionChanged: {
             var blurSize = 2
             edgeFlag = 0
-            if (window.visibility !== Window.Maximized && mouseX >= margin - blurSize
-                    && mouseX <= width - margin + blurSize
-                    && mouseY >= margin - blurSize && mouseY <= height - margin + blurSize) {
-                if (Math.abs(mouseX - margin) <= blurSize)
+            if (window.visibility !== Window.Maximized && mouseX >= margins - blurSize
+                    && mouseX <= width - margins + blurSize
+                    && mouseY >= margins - blurSize && mouseY <= height - margins + blurSize) {
+                if (Math.abs(mouseX - margins) <= blurSize)
                     edgeFlag |= Qt.LeftEdge
-                else if (Math.abs(mouseX - width + margin) <= blurSize)
+                else if (Math.abs(mouseX - width + margins) <= blurSize)
                     edgeFlag |= Qt.RightEdge
-                if (Math.abs(mouseY - margin) <= blurSize)
+                if (Math.abs(mouseY - margins) <= blurSize)
                     edgeFlag |= Qt.TopEdge
-                else if (Math.abs(mouseY - height + margin) <= blurSize)
+                else if (Math.abs(mouseY - height + margins) <= blurSize)
                     edgeFlag |= Qt.BottomEdge
             }
 
@@ -86,49 +99,29 @@ Item {
     RectangularGlow {
         id: effect
         anchors.fill: mainRect
+        z: -2
         cached: true
         glowRadius: 5
-        scale: mainRect.scale
+        scale: background.scale
         color: control.palette.shadow
         cornerRadius: glowRadius
     }
 
-    Rectangle {
+    Item {
         id: mainRect
-        anchors.centerIn: parent
-        width: parent.width - margin * 2
-        height: parent.height - margin * 2
-        radius: 4
+        anchors.fill: parent
+        anchors.margins: control.margins
         clip: true
-        border {
-            width: 1
-            color: Qt.darker(effect.color, 1.5)
-        }
-
-        Binding {
-            when: control.window.visibility === Window.Maximized
-            mainRect.border.width: 0
-            mainRect.radius: 0
-            control.margin: 0
-        }
-
-        layer.enabled: true
-        layer.effect: OpacityMask {
-            // clip elements that are out of background
-            cached: true
-            maskSource: Rectangle {
-                width: mainRect.width
-                height: mainRect.height
-                radius: mainRect.radius - mainRect.border.width
-            }
-        }
 
         TitleBar {
             id: title
             color: "transparent"
-            y: mainRect.border.width
-            anchors.horizontalCenter: parent.horizontalCenter
-            width: parent.width - parent.border.width * 2
+            anchors {
+                top: parent.top
+                left: parent.left
+                right: parent.right
+            }
+
             height: 30
             window: control.window
             buttonEnabled: control.mouseAreaEnabled
@@ -149,12 +142,32 @@ Item {
         }
 
         Binding {
-            control.contentItem.parent: mainRect
-            control.contentItem.anchors {
-                top: control.menuBar ? control.menuBar.bottom : title.bottom
-                left: title.left
-                right: title.right
-                bottom: mainRect.bottom
+            control {
+                contentItem {
+                    parent: mainRect
+                    anchors {
+                        top: control.menuBar ? control.menuBar.bottom : title.bottom
+                        left: title.left
+                        right: title.right
+                        bottom: mainRect.bottom
+                    }
+                }
+                background {
+                    parent: mainRect
+                    anchors.fill: mainRect
+                    z: -1
+                }
+            }
+        }
+
+        layer.enabled: !!control.background.radius
+        layer.effect: OpacityMask {
+            // clip elements that are out of background
+            cached: true
+            maskSource: Rectangle {
+                width: background.width
+                height: background.height
+                radius: background.radius
             }
         }
 
@@ -167,5 +180,10 @@ Item {
                 right: title.right
             }
         }
+    }
+
+    Binding {
+        when: control.window.visibility === Window.Maximized
+        control.margins: 0
     }
 }

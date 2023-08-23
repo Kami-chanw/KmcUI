@@ -1,4 +1,4 @@
-import QtQuick
+﻿import QtQuick
 import QtQuick.Controls
 import KmcUI
 
@@ -164,14 +164,8 @@ ListView {
                 sourceComponent: control.toolTip
                 onLoaded: {
                     itemToolTip.item.parent = item
+                    itemToolTip.item.text = model.tooltip
                     itemToolTip.item.visible = Qt.binding(() => itemMouseArea.containsMouse)
-                }
-
-                Binding {
-                    target: itemToolTip.item
-                    property: "text"
-                    value: model.tooltip
-                    when: itemToolTip.status === Loader.Ready
                 }
             }
 
