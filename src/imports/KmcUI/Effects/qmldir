@@ -1,0 +1,3 @@
+﻿module KmcUI.Effects
+ClipMask 1.0 ClipMask.qml
+RectangularGlow 1.0 RectangularGlow.qml

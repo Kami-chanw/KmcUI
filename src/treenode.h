@@ -1,6 +1,7 @@
-#ifndef TREENODE_H
+﻿#ifndef TREENODE_H
 #define TREENODE_H
 
+#include <QMap>
 #include <QQmlListProperty>
 #include <QVariant>
 #include <QtQmlIntegration>
@@ -20,20 +21,15 @@ class TreeNode : public QObject {
 public:
     QQmlListProperty<TreeNode> childNodes();
 
-    //! Instance a tree item with empty data.
+    const QVector<TreeNode*>& childItems() const { return childNodes_; }
+
     explicit TreeNode(TreeNode* parent = nullptr);
 
-    //! Instance a tree with the input data.
-    explicit TreeNode(const QVariant& data, TreeNode* parent = nullptr);
-
-    //! Destroy the item and all its children.
-    ~TreeNode();
-
     //! Return the internal data.
-    const QVariant& data() const;
+    QVariant data(const int role = Qt::DisplayRole) const;
 
     //! Set the internal data.
-    void setData(const QVariant& data);
+    void setData(const QVariant& data, const Qt::ItemDataRole = Qt::DisplayRole);
 
     //! Return the number of children of the item.
     qsizetype childCount() const;
@@ -49,8 +45,9 @@ public:
 
     void clear();
 
+
 signals:
-    void dataChanged(const QVariant&);
+    void dataChanged(const QVariant&, int = Qt::DisplayRole);
 
 private:
     void appendChild(TreeNode* item);
@@ -65,7 +62,7 @@ private:
     static void      clear(QQmlListProperty<TreeNode>*);
 
 private:
-    QVariant           itemData_;
+    QMap<int, QVariant> itemData_;
     QVector<TreeNode*> childNodes_;  // technologically, we can use QObject::children, but we cannot
                                      // ensure the order correction of its children.
 };

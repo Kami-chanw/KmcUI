@@ -1,6 +1,4 @@
-#include "treemodel.h"
-
-TreeModel::TreeModel(QObject* parent) : QAbstractItemModel(parent) {}
+﻿#include "treemodel.h"
 
 int TreeModel::rowCount(const QModelIndex& parent) const {
     return !parent.isValid() ? rootItem_.childCount() : internalPointer(parent)->childCount();
@@ -39,11 +37,11 @@ QModelIndex TreeModel::parent(const QModelIndex& index) const {
 }
 
 QVariant TreeModel::data(const QModelIndex& index, const int role) const {
-    if (!index.isValid() || role != Qt::DisplayRole) {
+    if (!index.isValid()) {
         return QVariant();
     }
 
-    return internalPointer(index)->data();
+    return internalPointer(index)->data(role);
 }
 
 bool TreeModel::setData(const QModelIndex& index, const QVariant& value, int /*role*/) {
@@ -69,6 +67,7 @@ void TreeModel::addItem(TreeNode* parent, TreeNode* child) {
     if (!child || !parent) {
         return;
     }
+
 
     emit layoutAboutToBeChanged();
 

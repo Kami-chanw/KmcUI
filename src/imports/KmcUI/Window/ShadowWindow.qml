@@ -1,4 +1,4 @@
-import QtQuick
+﻿import QtQuick
 import QtQuick.Controls
 
 Window {
@@ -7,13 +7,19 @@ Window {
     color: "transparent"
     flags: Qt.FramelessWindowHint | Qt.Window
 
+    enum DragBehavior {
+        NoDrag = 0,
+        DragTitle,
+        DragWindow
+    }
+
     property alias appIcon: bg.appIcon
     property alias contentItem: bg.contentItem
     property alias background: bg.background
     property alias title: bg.title
     property alias titleButton: bg.titleButton
     property alias resizable: bg.resizable
-    property alias dragType: bg.dragType
+    property alias dragBehavior: bg.dragBehavior
     property alias menuBar: bg.menuBar
 
     WindowBackground {

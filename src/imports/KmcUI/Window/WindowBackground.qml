@@ -1,9 +1,8 @@
-import QtQuick
+﻿import QtQuick
 import QtQuick.Controls
-import Qt5Compat.GraphicalEffects
 import QtQuick.Window
-import KmcUI
 import KmcUI.Controls
+import KmcUI.Effects
 
 Item {
     id: control
@@ -27,8 +26,14 @@ Item {
         }
     }
 
+    enum DragBehavior {
+        NoDrag = 0,
+        DragTitle,
+        DragWindow
+    }
+
     property bool resizable: false
-    property int dragType: KmcUI.DragType.DragWindow
+    property int dragBehavior: WindowBackground.DragWindow
     property alias titleButton: title.titleButton
     property alias appIcon: title.appIcon
     property alias title: title
@@ -50,11 +55,11 @@ Item {
                 window.startSystemResize(edgeFlag)
             } else {
                 // drag
-                if (dragType !== KmcUI.DragType.NoDrag && mouseX >= margins
+                if (dragBehavior !== WindowBackground.NoDrag && mouseX >= margins
                         && mouseX <= width - margins && mouseY >= margins
                         && mouseY <= height - margins) {
                     // is in region?
-                    if (dragType === KmcUI.DragType.DragWindow || mouseY <= title.height) {
+                    if (dragBehavior === WindowBackground.DragWindow || mouseY <= title.height) {
                         window.startSystemMove()
                     }
                 }
@@ -100,7 +105,6 @@ Item {
         id: effect
         anchors.fill: mainRect
         z: -2
-        cached: true
         glowRadius: 5
         scale: background.scale
         color: control.palette.shadow
@@ -161,9 +165,9 @@ Item {
         }
 
         layer.enabled: !!control.background.radius
-        layer.effect: OpacityMask {
+        layer.effect: ClipMask {
             // clip elements that are out of background
-            cached: true
+            source: mainRect
             maskSource: Rectangle {
                 width: background.width
                 height: background.height

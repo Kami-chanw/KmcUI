@@ -1,4 +1,4 @@
-import QtQuick
+﻿import QtQuick
 import KmcUI
 
 Rectangle {
@@ -36,15 +36,10 @@ Rectangle {
             icon: "qrc:/assets/icons/maximize.svg"
             tooltip: qsTr("最大化")
             onClicked: () => {
-                           for (var i = 0; i < buttonModel.count; ++i) {
-                               var b = buttonModel.get(i)
-                               if (b.name === "Maximize")
-                               break
-                           }
                            if (window.visibility === Window.Maximized) {
-                               window.showNormal()
+                               window?.showNormal()
                            } else {
-                               window.showMaximized()
+                               window?.showMaximized()
                            }
                        }
         }
@@ -317,18 +312,19 @@ Rectangle {
         minimizeButton.visible = titleButton & TitleBar.TitleButton.Minimize
         maximizeButton.visible = titleButton & TitleBar.TitleButton.Maximize
         closeButton.visible = titleButton & TitleBar.TitleButton.Close
-        maximizeButton.icon.source = Qt.binding(
-                    () => window.visibility
-                    === Window.Maximized ? "qrc:/assets/icons/restore.svg" : "qrc:/assets/icons/maximize.svg")
-        maximizeButton.tooltip = Qt.binding(
-                    () => window.visibility === Window.Maximized ? qsTr("还原") : qsTr("最大化"))
+        if (window) {
+            maximizeButton.icon.source = Qt.binding(
+                        () => window.visibility
+                        === Window.Maximized ? "qrc:/assets/icons/restore.svg" : "qrc:/assets/icons/maximize.svg")
+            maximizeButton.tooltip = Qt.binding(
+                        () => window.visibility === Window.Maximized ? qsTr("还原") : qsTr("最大化"))
+        }
     }
 
     Row {
         spacing: 1
         anchors.right: parent.right
         anchors.verticalCenter: parent.verticalCenter
-
         TitleBarButtons {
             id: _buttons
         }

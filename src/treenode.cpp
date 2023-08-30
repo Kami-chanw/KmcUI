@@ -1,19 +1,15 @@
-#include "treenode.h"
+﻿#include "treenode.h"
 
 QQmlListProperty<TreeNode> TreeNode::childNodes() {
     return { this,
-            this,
-            &TreeNode::appendChild,
-            &TreeNode::childCount,
-            &TreeNode::child,
-            &TreeNode::clear };
+             this,
+             &TreeNode::appendChild,
+             &TreeNode::childCount,
+             &TreeNode::child,
+             &TreeNode::clear };
 }
 
-TreeNode::TreeNode(TreeNode *parent) : QObject{ parent }, itemData_() {}
-
-TreeNode::TreeNode(const QVariant& data, TreeNode* parent) : QObject{ parent }, itemData_(data) {}
-
-TreeNode::~TreeNode() { qDeleteAll(childNodes_); }
+TreeNode::TreeNode(TreeNode* parent) : QObject{ parent }, itemData_() {}
 
 void TreeNode::appendChild(TreeNode* item) {
     if (item && !childNodes_.contains(item)) {
@@ -27,7 +23,7 @@ void TreeNode::removeChild(TreeNode* item) {
         childNodes_.removeAll(item);
 }
 
-TreeNode *TreeNode::parentItem() const { return qobject_cast<TreeNode*>(parent()); }
+TreeNode* TreeNode::parentItem() const { return qobject_cast<TreeNode*>(parent()); }
 
 TreeNode* TreeNode::child(qsizetype row) { return childNodes_.value(row); }
 
@@ -46,10 +42,10 @@ void TreeNode::clear(QQmlListProperty<TreeNode>* list) {
 
 qsizetype TreeNode::childCount() const { return childNodes_.count(); }
 
-const QVariant& TreeNode::data() const { return itemData_; }
+QVariant TreeNode::data(const int role) const { return itemData_[role]; }
 
-void TreeNode::setData(const QVariant& data) {
-    itemData_ = data;
+void TreeNode::setData(const QVariant& data, const Qt::ItemDataRole role) {
+    itemData_[role] = data;
     emit dataChanged(data);
 }
 

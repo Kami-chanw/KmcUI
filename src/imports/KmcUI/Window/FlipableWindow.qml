@@ -1,4 +1,4 @@
-import QtQuick
+﻿import QtQuick
 import QtQuick.Controls
 
 Window {
@@ -7,13 +7,19 @@ Window {
     color: "transparent"
     flags: Qt.FramelessWindowHint | Qt.Window
 
+    enum DragBehavior {
+        NoDrag = 0,
+        DragTitle,
+        DragWindow
+    }
+
     property bool flipped: false
     property alias front: frontBg
     property alias back: backBg
     property int flipDuation: 350
 
     property alias resizable: frontBg.resizable
-    property alias dragType: frontBg.dragType
+    property alias dragBehavior: frontBg.dragBehavior
 
     Flipable {
         id: flipable
@@ -34,7 +40,7 @@ Window {
             window: control
             mouseAreaEnabled: control.flipped
             resizable: frontBg.resizable
-            dragType: frontBg.dragType
+            dragBehavior: frontBg.dragBehavior
             palette: control.palette
         }
 

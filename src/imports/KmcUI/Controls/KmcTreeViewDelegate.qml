@@ -1,18 +1,15 @@
-import QtQuick
+﻿import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
 Item {
     id: control
 
-    implicitWidth: Math.max(row.implicitWidth,
-                            backgroundLoader.implicitWidth) + leftPadding + rightPadding
-    implicitHeight: Math.max(row.implicitHeight,
-                             backgroundLoader.implicitHeight) + topPadding + bottomPadding
+    implicitWidth: Math.max(row.implicitWidth, backgroundLoader.implicitWidth)
+    implicitHeight: Math.max(row.implicitHeight, backgroundLoader.implicitHeight)
 
     property Component background: Rectangle {
         implicitHeight: 22
-        color: selected || hovered ? "lightgray" : "transparent"
     }
     property Component contentItem: Text {
         verticalAlignment: Text.AlignVCenter
@@ -25,14 +22,9 @@ Item {
         text: "▶"
         color: "black"
     }
-    property alias spacing: row.spacing
-    property int padding: 0
-    property int leftPadding: padding
-    property int rightPadding: padding
-    property int topPadding: padding
-    property int bottomPadding: padding
 
-    property var currentIndex
+    // the following properties will be initialized by KmcTreeView
+    property var index
     property var currentData
     property bool expanded
     property int childCount
@@ -40,12 +32,14 @@ Item {
     property bool hasChildren
     property bool selected
     property bool hovered
+    property bool current
+    property int indentation: 15
 
     RowLayout {
         id: row
         anchors.fill: parent
         z: 1
-        spacing: 3
+        spacing: 0
         Loader {
             id: indicatorLoader
             sourceComponent: control.indicator
@@ -73,7 +67,7 @@ Item {
             bottom: parent.bottom
         }
         TapHandler {
-            onSingleTapped: selectCurrent()
+            onSingleTapped: select()
             onDoubleTapped: toggle()
         }
 

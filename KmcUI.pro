@@ -12,14 +12,14 @@ RESOURCES += \
     kmc_resources.qrc
 
 HEADERS += \
-    $$PWD/src/treenode.h \
-    $$PWD/src/treemodel.h \
+    src/treenode.h \
+    src/treemodel.h \
     src/foldertreemodel.h \
     src/kmcuiplugin.h
 
 SOURCES += \
-    $$PWD/src/treenode.cpp \
-    $$PWD/src/treemodel.cpp \
+    src/treenode.cpp \
+    src/treemodel.cpp \
     src/foldertreemodel.cpp
 
 INCLUDEPATH += \
@@ -46,7 +46,9 @@ CONTROLS_FILES += \
     src/imports/KmcUI/Controls/IconData.qml \
     src/imports/KmcUI/Controls/KeySequenceText.qml \
     src/imports/KmcUI/Controls/KmcTreeView.qml \
+    src/imports/KmcUI/Controls/KmcTreeView2.qml \
     src/imports/KmcUI/Controls/KmcTreeViewDelegate.qml \
+    src/imports/KmcUI/Controls/KmcTreeViewDelegate2.qml \
     src/imports/KmcUI/Controls/MouseToolTip.qml \
     src/imports/KmcUI/Controls/PopupComboBox.qml \
     src/imports/KmcUI/Controls/TitleBar.qml \
@@ -54,12 +56,12 @@ CONTROLS_FILES += \
     src/imports/KmcUI/Controls/WndMouseToolTip.qml \
     src/imports/KmcUI/Controls/qmldir
 
-QML_FILES += \
-    $$KMC_FILES \
-    $$CONTROLS_FILES \
-    $$WINDOW_FILES
+EFFECTS_FILES += \
+    src/imports/KmcUI/Effects/ClipMask.qml \
+    src/imports/KmcUI/Effects/RectangularGlow.qml \
+    src/imports/KmcUI/Effects/qmldir
 
-DISTFILES += $$QML_FILES
+
 
 DESTPATH=$$PWD/$$QML_IMPORT_NAME
 
@@ -79,7 +81,10 @@ copy_controls.path = $$DESTDIR/Controls
 copy_window.files += $$WINDOW_FILES
 copy_window.path = $$DESTDIR/Window
 
-COPIES += copy_kmc copy_controls copy_window
+copy_effects.files += $$EFFECTS_FILES
+copy_effects.path = $$DESTDIR/Effects
+
+COPIES += copy_kmc copy_controls copy_window copy_effects
 
 
 

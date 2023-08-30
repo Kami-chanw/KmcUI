@@ -13,11 +13,18 @@ ListView {
         property color textColor
     }
 
+    enum Behavior {
+        Check,
+        Toggle,
+        Click
+    }
+
     property font font: Qt.font({
                                     "pointSize": 9
                                 })
     required property int size
-    property bool toggleEnabled: true
+    property int behavior: AppBar.Check
+    property color indicatorColor: "#0078D4"
     property int location: KmcUI.Left
     onLocationChanged: {
         if (location === KmcUI.Left || location === KmcUI.Right)
@@ -97,25 +104,28 @@ ListView {
         }
     }
 
-    highlight: Item {
-        Rectangle {
-            id: indicator
-            anchors {
-                left: control.location !== KmcUI.Right ? parent.left : undefined
-                top: control.location !== KmcUI.Bottom ? parent.top : undefined
-                bottom: control.location !== KmcUI.Top ? parent.bottom : undefined
-                right: control.location !== KmcUI.Left ? parent.right : undefined
-            }
-            color: "#0078D4"
+    Binding {
+        when: control.behavior !== AppBar.Click
+        control.highlight: Item {
+            Rectangle {
+                id: indicator
+                anchors {
+                    left: control.location !== KmcUI.Right ? parent.left : undefined
+                    top: control.location !== KmcUI.Bottom ? parent.top : undefined
+                    bottom: control.location !== KmcUI.Top ? parent.bottom : undefined
+                    right: control.location !== KmcUI.Left ? parent.right : undefined
+                }
+                color: control.indicatorColor
 
-            Binding {
-                when: control.orientation === Qt.Vertical
-                indicator.width: 1
-            }
+                Binding {
+                    when: control.orientation === Qt.Vertical
+                    indicator.width: 1
+                }
 
-            Binding {
-                when: control.orientation === Qt.Horizontal
-                indicator.height: 1
+                Binding {
+                    when: control.orientation === Qt.Horizontal
+                    indicator.height: 1
+                }
             }
         }
     }
@@ -164,7 +174,7 @@ ListView {
                 sourceComponent: control.toolTip
                 onLoaded: {
                     itemToolTip.item.parent = item
-                    itemToolTip.item.text = model.tooltip
+                    itemToolTip.item.text = Qt.binding(() => model.tooltip)
                     itemToolTip.item.visible = Qt.binding(() => itemMouseArea.containsMouse)
                 }
             }
@@ -201,7 +211,8 @@ ListView {
                 },
                 State {
                     name: "active"
-                    when: control.currentIndex === index
+                    when: control.currentIndex === index || (control.behavior === AppBar.Click
+                                                             && itemMouseArea.containsPress)
                     PropertyChanges {
                         item.color: item.active.buttonColor
                         itemIcon.color: item.active.iconColor
@@ -256,9 +267,10 @@ ListView {
                     if (control.currentIndex !== index) {
                         control.aboutToSwitch(control.currentIndex, index)
                         control.model.get(control.currentIndex)?.deactivate(index)
-                        control.currentIndex = index
+                        if (control.behavior !== AppBar.Click)
+                            control.currentIndex = index
                         model?.activate(control.currentIndex)
-                    } else if (toggleEnabled) {
+                    } else if (control.behavior === AppBar.Toggle) {
                         control.aboutToSwitch(control.currentIndex, -1)
                         control.model.get(control.currentIndex)?.deactivate(-1)
                         control.currentIndex = -1

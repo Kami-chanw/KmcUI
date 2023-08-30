@@ -1,6 +1,6 @@
-import QtQuick
+﻿import QtQuick
 import QtQuick.Controls
-import Qt5Compat.GraphicalEffects
+import QtQuick.Effects
 import QtQuick.Window
 
 Window {
@@ -53,12 +53,12 @@ Window {
         border.color: "#E5E5E5"
         radius: 2
         layer.enabled: true
-        layer.effect: DropShadow {
-            id: shadow
-            radius: 4
-            horizontalOffset: 2
-            verticalOffset: 2
-            color: background.palette.shadow
+        layer.effect: MultiEffect {
+            shadowBlur: 0.5
+            shadowEnabled: true
+            shadowHorizontalOffset: 2
+            shadowVerticalOffset: 2
+            shadowColor: background.palette.shadow
         }
 
         Text {

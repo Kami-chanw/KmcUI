@@ -1,18 +1,20 @@
-import QtQuick
-import Qt5Compat.GraphicalEffects
+﻿import QtQuick
+import QtQuick.Effects
 
 Item {
     id: control
-    property alias color: effect.color
+    property alias color: effect.colorizationColor
     property alias source: icon.source
 
     Image {
         id: icon
         anchors.fill: parent
     }
-    ColorOverlay {
+
+    MultiEffect {
         id: effect
         anchors.fill: icon
         source: icon
+        colorization: 1.0
     }
 }

@@ -1,5 +1,4 @@
-import QtQuick
-import QtQuick.Shapes
+﻿import QtQuick
 
 Row {
     id: control

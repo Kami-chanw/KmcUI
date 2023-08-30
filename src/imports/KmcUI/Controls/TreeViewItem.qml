@@ -1,4 +1,4 @@
-import QtQuick
+﻿import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
@@ -7,23 +7,33 @@ Item {
 
     // model properties
     property var model
+    property var selectionModel
     property var parentIndex
     property var childCount
 
-    property var selectedIndex: null
-    property var hoveredIndex: null
-
-    // layout properties
-    property bool selectEnabled: true
-    property bool hoverEnabled: true
-
+    property int selectionMode
     property int indentation: 15
     property int currentIndent: 0
+    property bool keyNavigationEnabled
+    property bool pointerNavigationEnabled
 
     implicitHeight: childrenRect.height
 
     // Components
     property Component delegate: KmcTreeViewDelegate {}
+
+    focus: true
+    property bool ctrlPressed: false
+    Keys.onPressed: event => {
+                        if (event.key === Qt.Key_Control) {
+                            ctrlPressed = true
+                        }
+                    }
+    Keys.onReleased: event => {
+                         if (event.key === Qt.Key_Control) {
+                             ctrlPressed = false
+                         }
+                     }
 
     // Body
     ColumnLayout {
@@ -49,10 +59,11 @@ Item {
                     property int childCount: control.model.rowCount(currentIndex)
                     readonly property int depth: getDepth(currentIndex)
                     readonly property bool hasChildren: childCount > 0
-                    readonly property bool selected: control.selectEnabled
-                                                     && currentIndex === control.selectedIndex
-                    readonly property bool hovered: control.hoverEnabled
-                                                    && currentIndex === control.hoveredIndex
+                    readonly property bool selected: selectionMode !== KmcTreeView.NoSelection
+                                                     && control.selectionModel.selectedIndexes.includes(
+                                                         currentIndex)
+                    readonly property bool hovered: currentIndex === control.selectionModel.hoveredIndex
+                    readonly property bool current: currentIndex === control.selectionModel.currentIndex
 
                     function getDepth(index) {
                         var count = 0
@@ -64,23 +75,14 @@ Item {
                     }
                 }
 
-                Connections {
-                    target: control.model
-                    function onLayoutChanged() {
-                        const parent = control.model.index(index, 0, parentIndex)
-                        props.childCount = control.model.rowCount(parent)
-                    }
-                }
-
                 Loader {
                     id: delegateLoader
 
                     Layout.fillWidth: true
                     sourceComponent: control.delegate
-                    readonly property int indentation: control.indentation
 
                     Instantiator {
-                        model: ["currentIndex", "currentData", "expanded", "childCount", "depth", "hasChildren", "selected", "hovered"]
+                        model: ["indentation", "currentData", "expanded", "childCount", "depth", "hasChildren", "selected", "hovered", "current"]
                         delegate: Binding {
                             target: delegateLoader.item
                             property: modelData
@@ -89,25 +91,44 @@ Item {
                         }
                     }
 
+                    Binding {
+                        target: delegateLoader.item
+                        property: "index"
+                        value: props.currentIndex
+                        when: delegateLoader.status === Loader.Ready
+                    }
+
                     function toggle() {
                         if (props.hasChildren)
                             props.expanded = !props.expanded
                     }
 
-                    function selectCurrent() {
-                        control.selectedIndex = props.currentIndex
+                    function select(command = ItemSelectionModel.SelectCurrent) {
+                        switch (control.selectionMode) {
+                        case KmcTreeView.SingleSelection:
+                            command |= ItemSelectionModel.Current
+                            break
+                        case KmcTreeView.MultiSelection:
+                            if (control.ctrlPressed) {
+                                command = ItemSelectionModel.Toggle
+                            } else {
+                                control.selectionModel.clearSelection()
+                                command &= ~ItemSelectionModel.Current
+                            }
+                            break
+                        default:
+                            return
+                        }
+                        control.selectionModel.select(props.currentIndex, command)
+                        control.selectionModel.setCurrentIndex(props.currentIndex,
+                                                               ItemSelectionModel.NoUpdate)
                     }
 
-                    signal hoveredChanged
-
                     HoverHandler {
-                        enabled: control.hoverEnabled
+                        enabled: control.pointerNavigationEnabled
                         onHoveredChanged: {
-                            if (hovered && control.hoveredIndex !== props.currentIndex)
-                                control.hoveredIndex = props.currentIndex
-                            if (!hovered && control.hoveredIndex === props.currentIndex)
-                                control.hoveredIndex = null
-                            delegateLoader.hoveredChanged()
+                            if (hovered)
+                                control.selectionModel.hoveredIndex = props.currentIndex
                         }
                     }
                 }
@@ -125,7 +146,7 @@ Item {
                     }
 
                     Instantiator {
-                        model: ["model", "selectedIndex", "delegate", "selectEnabled", "hoverEnabled", "indentation"]
+                        model: ["model", "selectionMode", "selectionModel", "delegate", "indentation", "ctrlPressed", "keyNavigationEnabled", "pointerNavigationEnabled"]
                         delegate: Binding {
                             target: loader.item
                             property: modelData
@@ -147,14 +168,8 @@ Item {
                         function onLayoutChanged() {
                             const parent = control.model.index(index, 0, parentIndex)
                             loader.item.childCount = control.model.rowCount(parent)
+                            props.childCount = control.model.rowCount(parent)
                         }
-                    }
-
-                    Binding {
-                        target: control
-                        property: "selectedIndex"
-                        value: loader.item.selectedIndex
-                        when: loader.status == Loader.Ready
                     }
                 }
             }
