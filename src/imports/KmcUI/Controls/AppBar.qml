@@ -104,31 +104,30 @@ ListView {
         }
     }
 
-    Binding {
-        when: control.behavior !== AppBar.Click
-        control.highlight: Item {
-            Rectangle {
-                id: indicator
-                anchors {
-                    left: control.location !== KmcUI.Right ? parent.left : undefined
-                    top: control.location !== KmcUI.Bottom ? parent.top : undefined
-                    bottom: control.location !== KmcUI.Top ? parent.bottom : undefined
-                    right: control.location !== KmcUI.Left ? parent.right : undefined
-                }
-                color: control.indicatorColor
+    highlight: Item {
+        Rectangle {
+            id: indicator
+            anchors {
+                left: control.location !== KmcUI.Right ? parent.left : undefined
+                top: control.location !== KmcUI.Bottom ? parent.top : undefined
+                bottom: control.location !== KmcUI.Top ? parent.bottom : undefined
+                right: control.location !== KmcUI.Left ? parent.right : undefined
+            }
+            color: control.indicatorColor
 
-                Binding {
-                    when: control.orientation === Qt.Vertical
-                    indicator.width: 1
-                }
+            Binding {
+                when: control.orientation === Qt.Vertical
+                indicator.width: 1
+            }
 
-                Binding {
-                    when: control.orientation === Qt.Horizontal
-                    indicator.height: 1
-                }
+            Binding {
+                when: control.orientation === Qt.Horizontal
+                indicator.height: 1
             }
         }
     }
+
+    highlightFollowsCurrentItem: behavior !== AppBar.Click
 
     delegate: Component {
         Rectangle {

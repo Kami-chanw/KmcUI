@@ -2,7 +2,7 @@ TEMPLATE = lib
 QT += qml quick
 CONFIG += plugin qmltypes
 
-TARGET = $$qtLibraryTarget(KmcUI)
+TARGET = $$qtLibraryTarget(kmcuiplugin)
 
 QML_IMPORT_NAME = KmcUI
 QML_IMPORT_VERSION = 1.0
@@ -25,7 +25,7 @@ SOURCES += \
 INCLUDEPATH += \
     src
 
-DESTDIR = $$PWD/../../bin/$$QML_IMPORT_NAME
+DESTDIR = $$PWD/bin
 
 KMC_FILES += \
     src/imports/KmcUI/ColorIcon.qml \
@@ -61,30 +61,10 @@ EFFECTS_FILES += \
     src/imports/KmcUI/Effects/RectangularGlow.qml \
     src/imports/KmcUI/Effects/qmldir
 
-
-
-DESTPATH=$$PWD/$$QML_IMPORT_NAME
-
-target.path = $$DESTPATH
-qmldir.files = qmldir
-qmldir.path = $$DESTPATH
-INSTALLS += target qmldir
+DISTFILES += $$KMC_FILES $$WINDOW_FILES $$EFFECTS_FILES $$CONTROLS_FILES
 
 CONFIG += install_ok
 
-copy_kmc.files += $$KMC_FILES $$OUT_PWD/plugins.qmltypes
-copy_kmc.path = $$DESTDIR
-
-copy_controls.files += $$CONTROLS_FILES
-copy_controls.path = $$DESTDIR/Controls
-
-copy_window.files += $$WINDOW_FILES
-copy_window.path = $$DESTDIR/Window
-
-copy_effects.files += $$EFFECTS_FILES
-copy_effects.path = $$DESTDIR/Effects
-
-COPIES += copy_kmc copy_controls copy_window copy_effects
 
 
 
