@@ -1,6 +1,3 @@
 module KmcUI
 KmcUI 1.0 KmcUI.qml
 ColorIcon 1.0 ColorIcon.qml
-typeinfo plugins.qmltypes
-plugin kmcuiplugin
-
