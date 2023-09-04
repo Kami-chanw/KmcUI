@@ -27,7 +27,7 @@ ScrollView {
             property int targetIndex: -2
 
             delegate: Item {
-                id: toolBox
+                id: boxItem
                 width: control.implicitWidth
                 height: column.height
                 z: mouseArea.drag.active ? 2 : 0
@@ -90,7 +90,7 @@ ScrollView {
                     }
 
                     onPositionChanged: drag => {
-                                           repeater.targetIndex = dropArea.drag.y < toolBox.height
+                                           repeater.targetIndex = dropArea.drag.y < boxItem.height
                                            / 2 ? index - 1 : index // move down
                                            if (index < drag.source._index) {
                                                // move up
@@ -117,13 +117,6 @@ ScrollView {
                         }
                     }
 
-                    //                    Binding {
-                    //                        when: mouseArea.drag.active
-                    //                        mouseArea.cursorShape: toolBox.contains(
-                    //                                                   Qt.point(
-                    //                                                       mouseArea.mouseX,
-                    //                                                       mouseArea.mouseY)) ? Qt.ForbiddenCursor : Qt.DragCopyCursor
-                    //                    }
                     Loader {
                         id: dragTarget
                         visible: mouseArea.drag.active
