@@ -19,6 +19,6 @@ Item {
                 children: root.maskSource
             }
         }
-        fragmentShader: "qrc:/src/imports/KmcUI/Effects/shaders/clipmask.frag.qsb"
+        fragmentShader: "qrc:/assets/shaders/clipmask.frag.qsb"
     }
 }

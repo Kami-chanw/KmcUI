@@ -25,6 +25,6 @@ Item {
         property real spread: root.spread / 2.0
         property real cornerRadius: clampedCornerRadius()
 
-        fragmentShader: "qrc:/src/imports/KmcUI/Effects/shaders/rectangularglow.frag.qsb"
+        fragmentShader: "qrc:/assets/shaders/rectangularglow.frag.qsb"
     }
 }

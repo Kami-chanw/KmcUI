@@ -52,6 +52,7 @@ CONTROLS_FILES += \
     src/imports/KmcUI/Controls/MouseToolTip.qml \
     src/imports/KmcUI/Controls/PopupComboBox.qml \
     src/imports/KmcUI/Controls/TitleBar.qml \
+    src/imports/KmcUI/Controls/ToolBox.qml \
     src/imports/KmcUI/Controls/TreeViewItem.qml \
     src/imports/KmcUI/Controls/WndMouseToolTip.qml \
     src/imports/KmcUI/Controls/qmldir
@@ -61,7 +62,8 @@ EFFECTS_FILES += \
     src/imports/KmcUI/Effects/RectangularGlow.qml \
     src/imports/KmcUI/Effects/qmldir
 
-DISTFILES += $$KMC_FILES $$WINDOW_FILES $$EFFECTS_FILES $$CONTROLS_FILES
+DISTFILES += $$KMC_FILES $$WINDOW_FILES $$EFFECTS_FILES $$CONTROLS_FILES \
+    src/imports/KmcUI/Controls/ToolBoxDelegate.qml
 
 CONFIG += install_ok
 

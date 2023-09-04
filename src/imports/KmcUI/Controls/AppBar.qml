@@ -32,6 +32,7 @@ ListView {
         else
             orientation = Qt.Horizontal
     }
+    boundsBehavior: Flickable.StopAtBounds
 
     palette {
         button: "transparent"

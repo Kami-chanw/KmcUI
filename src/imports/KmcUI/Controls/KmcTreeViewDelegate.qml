@@ -22,6 +22,8 @@ Item {
         text: "▶"
         color: "black"
     }
+    property alias hovered: hoverHandler.hovered
+    property alias hoverEnabled: hoverHandler.enabled
 
     // the following properties will be initialized by KmcTreeView
     property var index
@@ -31,9 +33,12 @@ Item {
     property int depth
     property bool hasChildren
     property bool selected
-    property bool hovered
     property bool current
     property int indentation: 15
+
+    HoverHandler {
+        id: hoverHandler
+    }
 
     RowLayout {
         id: row
@@ -72,7 +77,7 @@ Item {
         }
 
         sourceComponent: control.background
-        width: row.width + (1 + depth * indentation)
+        width: row.width + depth * indentation
         x: -(depth * indentation)
         z: 0
     }

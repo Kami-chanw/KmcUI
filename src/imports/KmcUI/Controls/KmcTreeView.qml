@@ -39,7 +39,6 @@ Flickable {
         selectionModel: ItemSelectionModel {
             id: selectionModel
             model: control.model
-            property var hoveredIndex: null
         }
         // if there isn't rootIndex() in model, then create an invalid index as parent index
         parentIndex: model?.rootIndex() ?? model.index(-1, -1)
@@ -54,4 +53,5 @@ Flickable {
             }
         }
     }
+
 }

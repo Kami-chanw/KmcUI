@@ -62,7 +62,6 @@ Item {
                     readonly property bool selected: selectionMode !== KmcTreeView.NoSelection
                                                      && control.selectionModel.selectedIndexes.includes(
                                                          currentIndex)
-                    readonly property bool hovered: currentIndex === control.selectionModel.hoveredIndex
                     readonly property bool current: currentIndex === control.selectionModel.currentIndex
 
                     function getDepth(index) {
@@ -82,7 +81,7 @@ Item {
                     sourceComponent: control.delegate
 
                     Instantiator {
-                        model: ["indentation", "currentData", "expanded", "childCount", "depth", "hasChildren", "selected", "hovered", "current"]
+                        model: ["indentation", "currentData", "expanded", "childCount", "depth", "hasChildren", "selected", "current"]
                         delegate: Binding {
                             target: delegateLoader.item
                             property: modelData
@@ -122,14 +121,6 @@ Item {
                         control.selectionModel.select(props.currentIndex, command)
                         control.selectionModel.setCurrentIndex(props.currentIndex,
                                                                ItemSelectionModel.NoUpdate)
-                    }
-
-                    HoverHandler {
-                        enabled: control.pointerNavigationEnabled
-                        onHoveredChanged: {
-                            if (hovered)
-                                control.selectionModel.hoveredIndex = props.currentIndex
-                        }
                     }
                 }
 

@@ -66,6 +66,16 @@ Item {
             }
         }
 
+        onDoubleClicked: {
+            if (title.contains(Qt.point(mouseX, mouseY))) {
+                if (window.visibility === Window.Maximized) {
+                    window?.showNormal()
+                } else {
+                    window?.showMaximized()
+                }
+            }
+        }
+
         onExited: cursorShape = Qt.ArrowCursor
 
         onPositionChanged: {

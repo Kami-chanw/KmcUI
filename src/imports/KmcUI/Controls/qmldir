@@ -2,13 +2,15 @@
 AnchorToolTip 1.0 AnchorToolTip.qml
 AppBar 1.0 AppBar.qml
 MouseToolTip 1.0 MouseToolTip.qml
-PopupComboxBox 1.0 PopupComboxBox.qml
-TitleBar 1.0 TitleBar.qml
 KeySequenceText 1.0 KeySequenceText.qml
 KmcTreeView 1.0 KmcTreeView.qml
 KmcTreeView 2.0 KmcTreeView2.qml
 KmcTreeViewDelegate 1.0 KmcTreeViewDelegate.qml
 KmcTreeViewDelegate 2.0 KmcTreeViewDelegate2.qml
+PopupComboxBox 1.0 PopupComboxBox.qml
+TitleBar 1.0 TitleBar.qml
+ToolBox 1.0 ToolBox.qml
+ToolBoxDelegate 1.0 ToolBoxDelegate.qml
 internal WndMouseToolTip WndMouseToolTip.qml
 internal IconData IconData.qml
 internal TreeViewItem TreeViewItem.qml
