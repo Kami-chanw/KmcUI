@@ -1,3 +1,4 @@
 module KmcUI
 KmcUI 1.0 KmcUI.qml
 ColorIcon 1.0 ColorIcon.qml
+KmcRectangle 1.0 KmcRectangle.qml

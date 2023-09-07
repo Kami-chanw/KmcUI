@@ -13,14 +13,13 @@ Window {
         DragWindow
     }
 
-    property alias appIcon: bg.appIcon
     property alias contentItem: bg.contentItem
     property alias background: bg.background
-    property alias title: bg.title
     property alias titleButton: bg.titleButton
     property alias resizable: bg.resizable
     property alias dragBehavior: bg.dragBehavior
     property alias menuBar: bg.menuBar
+    property alias title: bg.title
 
     WindowBackground {
         id: bg

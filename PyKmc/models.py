@@ -9,20 +9,20 @@ from PySide6.QtQml import QmlNamedElement, ListProperty
 @QmlNamedElement("KmcTreeNode")
 @ClassInfo(DefaultProperty="childNodes")
 class TreeNode(QObject):
-    dataChanged = Signal(object, int)
+    dataChanged = Signal(int)
 
-    def __init__(self, parent = None):
+    def __init__(self, parent=None):
         super().__init__(parent)
         self._itemData = {}
         self._childNodes = []
 
     def setData(self, value, role=Qt.DisplayRole):
         self._itemData[role] = value
-        self.dataChanged.emit(value, role)
+        self.dataChanged.emit(role)
 
-    @Property(object, fset=setData, notify=dataChanged, final=True)
-    def data(self, role=Qt.DisplayRole):
-        return self._itemData.get(role)
+    @Property("QVariant", fset=setData, notify=dataChanged, final=True)
+    def data(self):
+        return self._itemData.get(Qt.DisplayRole)
 
     def parentItem(self) -> 'TreeNode':
         return self.parent()
@@ -32,7 +32,7 @@ class TreeNode(QObject):
             return False
 
         for row in range(count):
-            self._childNodes.insert(position, TreeNode( self))
+            self._childNodes.insert(position, TreeNode(self))
 
         return True
 
@@ -44,7 +44,7 @@ class TreeNode(QObject):
             self._childNodes.pop(position)
 
         return True
-    
+
     def row(self):
         if self.parentItem() is not None:
             return self.parentItem()._childNodes.index(self)
@@ -64,6 +64,11 @@ class TreeNode(QObject):
 
     def childCount(self):
         return len(self._childNodes)
+    
+    def childNumber(self) -> int:
+        if self.parentItem():
+            return self.parentItem()._childNodes.index(self)
+        return 0
 
     def __repr__(self) -> str:
         result = f"<PyKmc.models.TreeNode at 0x{id(self):x}"
@@ -72,15 +77,14 @@ class TreeNode(QObject):
         result += f", {len(self._childNodes)} children>"
         return result
 
-    childNodes = ListProperty(QObject, appendNode, child, clear,
-                              childCount)
+    childNodes = ListProperty(QObject, appendNode, child, clear, childCount)
 
 
 @QmlNamedElement("KmcTreeModel")
 @ClassInfo(DefaultProperty="topItems")
 class TreeModel(QAbstractItemModel):
 
-    def __init__(self, parent = None):
+    def __init__(self, parent=None):
         super().__init__(parent)
         self._rootItem = TreeNode(parent)
 
@@ -108,7 +112,7 @@ class TreeModel(QAbstractItemModel):
         if parentItem == self._rootItem or not parentItem:
             return QModelIndex()
 
-        return self.createIndex(parentItem.childCount(), 0, parentItem)
+        return self.createIndex(parentItem.childNumber(), 0, parentItem)
 
     def index(self, row: int, column: int,
               parent: QModelIndex = QModelIndex()) -> QModelIndex:
@@ -220,16 +224,14 @@ class TreeModel(QAbstractItemModel):
 
     def __repr__(self) -> str:
         return self._repr_recursion(self._rootItem)
-    
+
     def _appendNode(self, node):
         self._rootItem.appendNode(node)
 
     def _child(self, n):
         return self._rootItem.child(n)
-    
+
     def _childCount(self):
         return self._rootItem.childCount()
-    
-    topItems = ListProperty(TreeNode, _appendNode, _child, clear,
-                              _childCount)
 
+    topItems = ListProperty(TreeNode, _appendNode, _child, clear, _childCount)

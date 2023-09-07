@@ -2,7 +2,6 @@
 import QtQuick.Effects
 
 Item {
-    id: control
     property alias color: effect.colorizationColor
     property alias source: icon.source
 

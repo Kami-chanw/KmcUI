@@ -35,7 +35,6 @@ Item {
     property bool resizable: false
     property int dragBehavior: WindowBackground.DragWindow
     property alias titleButton: title.titleButton
-    property alias appIcon: title.appIcon
     property alias title: title
     property Item menuBar
 
@@ -134,6 +133,8 @@ Item {
                 top: parent.top
                 left: parent.left
                 right: parent.right
+                leftMargin: 1
+                rightMargin: 1
             }
 
             height: 30
@@ -184,15 +185,14 @@ Item {
                 radius: background.radius
             }
         }
+    }
 
-        Binding {
-            when: menuBar !== undefined
-            control.menuBar.parent: mainRect
-            control.menuBar.anchors {
-                top: title.bottom
-                left: title.left
-                right: title.right
-            }
+    onMenuBarChanged: {
+        if (menuBar) {
+            menuBar.parent = mainRect
+            menuBar.anchors.left = title.left
+            menuBar.anchors.top = title.bottom
+            menuBar.anchors.right = title.right
         }
     }
 
