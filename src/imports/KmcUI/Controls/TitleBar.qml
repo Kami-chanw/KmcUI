@@ -10,7 +10,6 @@ KmcRectangle {
         Maximize = 4,
         Full = 7
     }
-//    z: 1
 
     property Window window
     property bool buttonEnabled: true

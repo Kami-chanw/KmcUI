@@ -133,9 +133,13 @@ Item {
                 top: parent.top
                 left: parent.left
                 right: parent.right
-                leftMargin: 1
-                rightMargin: 1
+                leftMargin: control.background?.border.width ?? 0
+                rightMargin: control.background?.border.width ?? 0
+                bottomMargin: control.background?.border.width ?? 0
             }
+
+            leftTopRadius: control.background?.radius ?? 0
+            rightTopRadius: control.background?.radius ?? 0
 
             height: 30
             window: control.window
@@ -156,6 +160,7 @@ Item {
             }
         }
 
+        Component.onCompleted: console.log(title.leftTopRadius)
         Binding {
             control {
                 contentItem {
@@ -164,6 +169,9 @@ Item {
                         top: control.menuBar ? control.menuBar.bottom : title.bottom
                         left: title.left
                         right: title.right
+                        //                        leftMargin: control.background?.border.width ?? 0
+                        //                        rightMargin: control.background?.border.width ?? 0
+                        //                        topMargin: control.background?.border.width ?? 0
                         bottom: mainRect.bottom
                     }
                 }
@@ -175,16 +183,16 @@ Item {
             }
         }
 
-        layer.enabled: !!control.background.radius
-        layer.effect: ClipMask {
-            // clip elements that are out of background
-            source: mainRect
-            maskSource: Rectangle {
-                width: background.width
-                height: background.height
-                radius: background.radius
-            }
-        }
+        //        layer.enabled: !!control.background.radius
+        //        layer.effect: ClipMask {
+        //            // clip elements that are out of background
+        //            source: mainRect
+        //            maskSource: Rectangle {
+        //                width: background.width
+        //                height: background.height
+        //                radius: background.radius
+        //            }
+        //        }
     }
 
     onMenuBarChanged: {

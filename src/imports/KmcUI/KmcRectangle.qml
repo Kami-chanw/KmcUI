@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import KmcUI.Effects
+import Qt5Compat.GraphicalEffects
 
 Item {
     id: root
@@ -56,6 +57,7 @@ Item {
         id: container
         width: root.width - leftBorder.width - rightBorder.width
         height: root.height - topBorder.width - bottomBorder.width
+        visible: false
     }
     Rectangle {
         anchors.top: parent.top
