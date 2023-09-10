@@ -1,26 +1,25 @@
 import QtQuick
 import QtQuick.Controls
 import KmcUI.Effects
-import Qt5Compat.GraphicalEffects
 
-Item {
+Canvas {
     id: root
     property int radius: 0
     property int leftTopRadius: radius
     property int rightTopRadius: radius
     property int rightBottomRadius: radius
     property int leftBottomRadius: radius
-    property alias color: container.color
-
+    property color color: "white"
     default property alias data: container.data
+    property alias contentItem: container
 
-    onWidthChanged: canvas.requestPaint()
-    onHeightChanged: canvas.requestPaint()
-    onRadiusChanged: canvas.requestPaint()
-    onLeftTopRadiusChanged: canvas.requestPaint()
-    onRightTopRadiusChanged: canvas.requestPaint()
-    onLeftBottomRadiusChanged: canvas.requestPaint()
-    onRightBottomRadiusChanged: canvas.requestPaint()
+    onChildrenChanged: {
+        for (const v of children) {
+            if (v !== canvas && v !== container && v !== clipMask) {
+                v.parent = container
+            }
+        }
+    }
 
     component BorderGroup: QtObject {
         id: borderGroup
@@ -53,42 +52,50 @@ Item {
         width: border.width
     }
 
-    Rectangle {
+    onPaint: {
+        var ctx = getContext("2d")
+        var x = root.leftBorder.width
+        var y = root.topBorder.width
+        var w = root.width - root.rightBorder.width - root.leftBorder.width
+        var h = root.height - root.topBorder.width - root.bottomBorder.width
+        ctx.save()
+        ctx.beginPath()
+        // top line
+        ctx.lineWidth = root.topBorder.width * 2
+        ctx.strokeStyle = root.topBorder.color
+        ctx.moveTo(x + root.leftTopRadius, y)
+        ctx.lineTo(x + w - root.rightTopRadius, y)
+        ctx.arcTo(x + w, y, x + w, y + root.rightTopRadius, root.rightTopRadius)
+        ctx.stroke()
+        // right line
+        ctx.lineWidth = root.rightBorder.width * 2
+        ctx.strokeStyle = root.rightBorder.color
+        ctx.lineTo(x + w, y + h - root.rightBottomRadius)
+        ctx.arcTo(x + w, y + h, x + w - root.rightBottomRadius, y + h, root.rightBottomRadius)
+        ctx.stroke()
+        // bottom baseline
+        ctx.lineWidth = root.bottomBorder.width * 2
+        ctx.strokeStyle = root.bottomBorder.color
+        ctx.lineTo(x + root.leftBottomRadius, y + h)
+        ctx.arcTo(x, y + h, x, y + h - root.leftBottomRadius, root.leftBottomRadius)
+        ctx.stroke()
+        // left line
+        ctx.lineWidth = root.leftBorder.width * 2
+        ctx.strokeStyle = root.leftBorder.color
+        ctx.lineTo(x, y + root.leftTopRadius)
+        ctx.arcTo(x, y, x + root.leftTopRadius, y, root.leftTopRadius)
+        ctx.stroke()
+
+        ctx.closePath()
+        ctx.fillStyle = root.color
+        ctx.fill()
+        ctx.restore()
+    }
+
+    Item {
         id: container
-        width: root.width - leftBorder.width - rightBorder.width
-        height: root.height - topBorder.width - bottomBorder.width
-        visible: false
-    }
-    Rectangle {
-        anchors.top: parent.top
-        height: root.topBorder.width
-        width: parent.width
-        color: root.topBorder.color
-        z: 1
-    }
-
-    Rectangle {
-        anchors.left: parent.left
-        height: parent.height
-        width: root.leftBorder.width
-        color: root.leftBorder.color
-        z: 1
-    }
-
-    Rectangle {
-        anchors.bottom: parent.bottom
-        height: root.bottomBorder.width
-        width: parent.width
-        color: root.bottomBorder.color
-        z: 1
-    }
-
-    Rectangle {
-        anchors.right: parent.right
-        height: parent.height
-        width: root.rightBorder.width
-        color: root.rightBorder.color
-        z: 1
+        anchors.fill: parent
+        opacity: 0 // must be `opacity: 0` instead of `visible: false`, the later will disable all events.
     }
 
     Canvas {
@@ -97,10 +104,11 @@ Item {
         visible: false
         onPaint: {
             var ctx = getContext("2d")
-            var x = 0
-            var y = 0
-            var w = root.width
-            var h = root.height
+            var x = root.leftBorder.width
+            var y = root.topBorder.width
+            var w = root.width - root.rightBorder.width - root.leftBorder.width
+            var h = root.height - root.topBorder.width - root.bottomBorder.width
+
             ctx.save()
             ctx.beginPath()
             ctx.moveTo(x + root.leftTopRadius, y)
@@ -118,7 +126,9 @@ Item {
             ctx.restore()
         }
     }
+
     ClipMask {
+        id: clipMask
         anchors.fill: container
         source: container
         maskSource: canvas

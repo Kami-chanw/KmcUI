@@ -39,7 +39,7 @@ Item {
     property Item menuBar
 
     palette {
-        shadow: "#88333333"
+        shadow: "#88222222"
     }
 
     MouseArea {
@@ -78,7 +78,7 @@ Item {
         onExited: cursorShape = Qt.ArrowCursor
 
         onPositionChanged: {
-            var blurSize = 2
+            var blurSize = 3
             edgeFlag = 0
             if (window.visibility !== Window.Maximized && mouseX >= margins - blurSize
                     && mouseX <= width - margins + blurSize
@@ -115,16 +115,16 @@ Item {
         anchors.fill: mainRect
         z: -2
         glowRadius: 5
+        spread: 0.2
         scale: background.scale
         color: control.palette.shadow
-        cornerRadius: glowRadius
+        cornerRadius: background?.radius ?? 0
     }
 
     Item {
         id: mainRect
         anchors.fill: parent
         anchors.margins: control.margins
-        clip: true
 
         TitleBar {
             id: title
@@ -133,11 +133,10 @@ Item {
                 top: parent.top
                 left: parent.left
                 right: parent.right
-                leftMargin: control.background?.border.width ?? 0
-                rightMargin: control.background?.border.width ?? 0
-                bottomMargin: control.background?.border.width ?? 0
+                topMargin: background?.border.width ?? 0
+                leftMargin: background?.border.width ?? 0
+                rightMargin: background?.border.width ?? 0
             }
-
             leftTopRadius: control.background?.radius ?? 0
             rightTopRadius: control.background?.radius ?? 0
 
@@ -160,7 +159,6 @@ Item {
             }
         }
 
-        Component.onCompleted: console.log(title.leftTopRadius)
         Binding {
             control {
                 contentItem {
@@ -169,10 +167,8 @@ Item {
                         top: control.menuBar ? control.menuBar.bottom : title.bottom
                         left: title.left
                         right: title.right
-                        //                        leftMargin: control.background?.border.width ?? 0
-                        //                        rightMargin: control.background?.border.width ?? 0
-                        //                        topMargin: control.background?.border.width ?? 0
                         bottom: mainRect.bottom
+                        bottomMargin: background?.border.width ?? 0
                     }
                 }
                 background {
@@ -182,17 +178,6 @@ Item {
                 }
             }
         }
-
-        //        layer.enabled: !!control.background.radius
-        //        layer.effect: ClipMask {
-        //            // clip elements that are out of background
-        //            source: mainRect
-        //            maskSource: Rectangle {
-        //                width: background.width
-        //                height: background.height
-        //                radius: background.radius
-        //            }
-        //        }
     }
 
     onMenuBarChanged: {

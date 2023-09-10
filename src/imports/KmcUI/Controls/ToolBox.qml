@@ -11,7 +11,7 @@ import QtQuick.Controls
  * You can also use sourceComponentSelector, which also is a function that accept current item but return a Component to  Loader.sourceComponent.
  * For above funcitonalities, the model must contains function get(index)
 */
-ScrollView {
+Flickable {
     id: control
     property Component boxDelegate
     property alias model: repeater.model
@@ -24,6 +24,10 @@ ScrollView {
     property bool reorderEnabled: true
     property var sourceSelector
     property var sourceComponentSelector
+    clip: true
+    contentHeight: content.height
+    contentWidth: content.width
+    boundsBehavior: Flickable.StopAtBounds
 
     signal reordered(int from, int to)
 
@@ -36,7 +40,7 @@ ScrollView {
     }
 
     Column {
-        anchors.fill: parent
+        id: content
         Repeater {
             id: repeater
 
@@ -49,39 +53,34 @@ ScrollView {
 
             delegate: Item {
                 id: boxItem
-                width: control.implicitWidth
+                width: control.width
                 height: column.height
-                z: mouseArea.drag.active ? 2 : 0
-                //                property alias contentLoader: contentLoader
+
+                property alias contentLoader: contentLoader
+                property bool expanded: false
                 Column {
                     id: column
                     Loader {
                         id: boxLoader
-                        property var model: repeater.model.get(index)
-                        property bool expanded: false
-                        width: control.implicitWidth
-                        Binding {
-                            target: boxLoader.item
-                            property: "highlighted"
-                            value: control.currentIndex === index
-                            when: boxLoader.status === Loader.Ready
+                        width: control.width
+
+                        onLoaded: {
+                            boxLoader.item.expanded = Qt.binding(() => boxItem.expanded)
+                            boxLoader.item.highlighted = Qt.binding(
+                                        () => control.currentIndex === index)
+                            boxLoader.item.model = Qt.binding(() => repeater.model.get(index))
                         }
-                        //                        Binding {
-                        //                            target: boxLoader.item
-                        //                            property: "model"
-                        //                            value: repeater.model.get(index)
-                        //                            when: boxLoader.status === Loader.Ready
-                        //                        }
+
                         sourceComponent: control.boxDelegate
                     }
 
                     Loader {
                         id: contentLoader
 
-                        onLoaded: {
-                            console.log("MyToolBox")
+                        Component.onCompleted: {
                             if (control.sourceComponentSelector !== undefined) {
-                                contentLoader.sourceComponent = control.sourceComponentSelector(index)
+                                contentLoader.sourceComponent = control.sourceComponentSelector(
+                                            index)
                             } else if (control.sourceSelector !== undefined) {
                                 const param = control.sourceSelector(index)
                                 contentLoader.setSource(param["source"], param["properties"])
@@ -89,15 +88,16 @@ ScrollView {
                                 throw new Error("KmcUI.Controls.ToolBox: One of properties sourceComponentSelector and sourceComponent should be initialized.")
                         }
 
-                        width: control.implicitWidth
+                        width: control.width
                         Binding {
-                            when: !boxLoader.expanded && boxLoader.status === Loader.Ready
+                            when: !boxItem.expanded && contentLoader.status === Loader.Ready
                             target: contentLoader
                             property: "height"
                             value: 0
                         }
 
                         Behavior on height {
+                            enabled: contentLoader.status === Loader.Ready
                             NumberAnimation {
                                 id: collapseAnim
                                 easing.type: Easing.InOutQuad
@@ -114,8 +114,8 @@ ScrollView {
 
                     Loader {
                         width: parent.width
-                        height: boxLoader.expanded ? parent.height / 2 : parent.height
-                        y: boxLoader.expanded
+                        height: boxItem.expanded ? parent.height / 2 : parent.height
+                        y: boxItem.expanded
                            && dropArea.drag.y >= parent.height / 2 ? parent.height / 2 : 0
                         active: dropArea.containsDrag && control.reorderEnabled
                         sourceComponent: control.dropAreaItem
@@ -125,8 +125,7 @@ ScrollView {
                     Loader {
                         y: dropArea.drag.y < boxLoader.height / 2 ? 0 : boxLoader.height - height
                         width: parent.width
-                        active: dropArea.containsDrag && !boxLoader.expanded
-                                && control.reorderEnabled
+                        active: dropArea.containsDrag && !boxItem.expanded && control.reorderEnabled
                         sourceComponent: control.dropIndicator
                     }
 
@@ -140,61 +139,65 @@ ScrollView {
                                        }
                 }
 
-                MouseArea {
-                    id: mouseArea
-                    anchors.fill: parent
-                    drag.target: dragTarget
-                    onReleased: {
-                        if (control.reorderEnabled) {
-                            if (repeater.targetIndex >= -1) {
-                                const to = Math.max(0, Math.min(repeater.targetIndex,
-                                                                repeater.count - 1))
-                                repeater.model.move(index, to, 1)
-                                control.reordered.emit(index, to)
+                z: mouseArea.drag.active ? 1 : 0
+                Loader {
+                    id: dragTarget
+                    active: control.reorderEnabled
+                    onLoaded: {
+                        dragTarget.item.expanded = Qt.binding(() => boxItem.expanded)
+                    }
+                    property int _index: index
+                    opacity: 0.7
+                    anchors.top: parent.top
+                    anchors.left: parent.left
+                    Drag.active: mouseArea.drag.active
+                    Drag.keys: [...Array(repeater.count).keys()].filter(i => i !== index)
+                    Drag.hotSpot: Qt.point(mouseArea.mouseX, mouseArea.mouseY)
+                    states: State {
+                        when: mouseArea.drag.active
+                        AnchorChanges {
+                            target: dragTarget
+                            anchors {
+                                top: undefined
+                                left: undefined
                             }
-                            repeater.targetIndex = -2
                         }
                     }
 
-                    onClicked: {
-                        if (!collapseAnim.running && boxLoader.contains(Qt.point(mouseX, mouseY))) {
-                            boxLoader.expanded = !boxLoader.expanded
-                            control.currentIndex = index
-                        }
-                    }
+                    width: boxLoader.width
+                    height: boxLoader.height
+                    sourceComponent: control.boxDelegate
+                    MouseArea {
+                        id: mouseArea
+                        anchors.fill: parent
+                        drag.target: dragTarget
+                        hoverEnabled: true
+                        z: 1
+                        cursorShape: !drag.active ? Qt.ArrowCursor : (boxLoader.contains(
+                                                                          Qt.point(
+                                                                              dragTarget.x + mouseX,
+                                                                              dragTarget.y + mouseY)) ? Qt.ForbiddenCursor : Qt.DragCopyCursor)
 
-                    Loader {
-                        id: dragTarget
-                        visible: mouseArea.drag.active
-                        active: control.reorderEnabled
-                        property string title: model.title
-                        property bool expanded: false
-                        property int _index: index
-                        opacity: 0.7
-                        anchors {
-                            verticalCenter: parent.verticalCenter
-                            horizontalCenter: parent.horizontalCenter
-                        }
-                        Drag.active: mouseArea.drag.active
-                        Drag.keys: [...Array(repeater.count).keys()].filter(i => i !== index)
-                        states: State {
-                            when: mouseArea.drag.active
-                            AnchorChanges {
-                                target: dragTarget
-                                anchors {
-                                    verticalCenter: undefined
-                                    horizontalCenter: undefined
+                        onReleased: {
+                            if (control.reorderEnabled) {
+                                if (repeater.targetIndex >= -1) {
+                                    const to = Math.max(0, Math.min(repeater.targetIndex,
+                                                                    repeater.count - 1))
+                                    if (index !== to) {
+                                        repeater.model.move(index, to, 1)
+                                        control.reordered(index, to)
+                                    }
                                 }
-                            }
-                            PropertyChanges {
-                                dragTarget.x: mouseArea.mouseX
-                                dragTarget.y: mouseArea.mouseY
+                                repeater.targetIndex = -2
                             }
                         }
-
-                        width: boxLoader.width
-                        height: boxLoader.height
-                        sourceComponent: control.boxDelegate
+                        onClicked: {
+                            if (!collapseAnim.running && boxLoader.contains(
+                                        Qt.point(mouseArea.mouseX, mouseArea.mouseY))) {
+                                boxItem.expanded = !boxItem.expanded
+                                control.currentIndex = index
+                            }
+                        }
                     }
                 }
             }
