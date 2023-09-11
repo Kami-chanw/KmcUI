@@ -71,13 +71,25 @@ Flickable {
                             boxLoader.item.model = Qt.binding(() => repeater.model.get(index))
                         }
 
+                        Connections {
+                            target: repeater.model
+                            function onDataChanged(leftTop) {
+                                if (leftTop.row === index) {
+                                    boxLoader.item.model = Qt.binding(
+                                                () => repeater.model.get(index))
+                                    contentLoader.updateSource()
+                                }
+                            }
+                        }
+
                         sourceComponent: control.boxDelegate
                     }
 
                     Loader {
                         id: contentLoader
+                        clip: true
 
-                        Component.onCompleted: {
+                        function updateSource() {
                             if (control.sourceComponentSelector !== undefined) {
                                 contentLoader.sourceComponent = control.sourceComponentSelector(
                                             index)
@@ -88,10 +100,14 @@ Flickable {
                                 throw new Error("KmcUI.Controls.ToolBox: One of properties sourceComponentSelector and sourceComponent should be initialized.")
                         }
 
+                        Component.onCompleted: {
+                            updateSource()
+                        }
+
                         width: control.width
                         Binding {
                             when: !boxItem.expanded && contentLoader.status === Loader.Ready
-                            target: contentLoader
+                            target: contentLoader.item
                             property: "height"
                             value: 0
                         }
@@ -145,9 +161,10 @@ Flickable {
                     active: control.reorderEnabled
                     onLoaded: {
                         dragTarget.item.expanded = Qt.binding(() => boxItem.expanded)
+                        dragTarget.item.model = Qt.binding(() => repeater.model.get(index))
                     }
                     property int _index: index
-                    opacity: 0.7
+                    opacity: mouseArea.drag.active ? 0.7 : 0
                     anchors.top: parent.top
                     anchors.left: parent.left
                     Drag.active: mouseArea.drag.active
