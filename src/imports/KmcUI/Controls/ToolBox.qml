@@ -58,6 +58,61 @@ Flickable {
 
                 property alias contentLoader: contentLoader
                 property bool expanded: false
+
+                ShaderEffectSource {
+                    id: dragTarget
+                    sourceItem: boxLoader
+                    height: boxLoader.height
+                    width: boxLoader.width
+                    z: dragHandler.active ? 1 : 0
+                    property int _index: index
+                    opacity: dragHandler.active ? 0.7 : 0
+                    anchors.top: parent.top
+                    anchors.left: parent.left
+                    Drag.active: dragHandler.active
+                    Drag.keys: [...Array(repeater.count).keys()].filter(i => i !== index)
+                    Drag.hotSpot: Qt.point(mouseArea.mouseX, mouseArea.mouseY)
+                    Drag.onDragFinished: console.log(456)
+                    states: State {
+                        when: dragHandler.active
+                        AnchorChanges {
+                            target: dragTarget
+                            anchors {
+                                top: undefined
+                                left: undefined
+                            }
+                        }
+                    }
+                    DragHandler {
+                        id: dragHandler
+                        cursorShape: !active ? Qt.ArrowCursor : (boxLoader.contains(
+                                                                     Qt.point(
+                                                                         dragTarget.x + mouseArea.mouseX,
+                                                                         dragTarget.y + mouseArea.mouseY)) ? Qt.ForbiddenCursor : Qt.DragCopyCursor)
+                        onActiveChanged: {
+                            if (!active) {
+                                if (control.reorderEnabled) {
+                                    if (repeater.targetIndex >= -1) {
+                                        const to = Math.max(0, Math.min(repeater.targetIndex,
+                                                                        repeater.count - 1))
+                                        if (index !== to) {
+                                            repeater.model.move(index, to, 1)
+                                            control.reordered(index, to)
+                                        }
+                                    }
+                                    repeater.targetIndex = -2
+                                }
+                            }
+                        }
+                    }
+
+                    MouseArea {
+                        id: mouseArea
+                        anchors.fill: parent
+                        hoverEnabled: true
+                    }
+                }
+
                 Column {
                     id: column
                     Loader {
@@ -65,18 +120,26 @@ Flickable {
                         width: control.width
 
                         onLoaded: {
+                            boxLoader.item.index = Qt.binding(() => index)
                             boxLoader.item.expanded = Qt.binding(() => boxItem.expanded)
                             boxLoader.item.highlighted = Qt.binding(
                                         () => control.currentIndex === index)
-                            boxLoader.item.model = Qt.binding(() => repeater.model.get(index))
+                            boxLoader.item.model = repeater.model.get(index)
+                            contentLoader.updateSource()
+                        }
+
+                        function toggleContent() {
+                            if (!collapseAnim.running) {
+                                boxItem.expanded = !boxItem.expanded
+                                control.currentIndex = index
+                            }
                         }
 
                         Connections {
                             target: repeater.model
                             function onDataChanged(leftTop) {
                                 if (leftTop.row === index) {
-                                    boxLoader.item.model = Qt.binding(
-                                                () => repeater.model.get(index))
+                                    boxLoader.item.model = repeater.model.get(index)
                                     contentLoader.updateSource()
                                 }
                             }
@@ -98,10 +161,6 @@ Flickable {
                                 contentLoader.setSource(param["source"], param["properties"])
                             } else
                                 throw new Error("KmcUI.Controls.ToolBox: One of properties sourceComponentSelector and sourceComponent should be initialized.")
-                        }
-
-                        Component.onCompleted: {
-                            updateSource()
                         }
 
                         width: control.width
@@ -145,6 +204,8 @@ Flickable {
                         sourceComponent: control.dropIndicator
                     }
 
+                    onDropped: console.log(123)
+
                     onPositionChanged: drag => {
                                            repeater.targetIndex = dropArea.drag.y < boxItem.height
                                            / 2 ? index - 1 : index // move down
@@ -153,69 +214,6 @@ Flickable {
                                                repeater.targetIndex++
                                            }
                                        }
-                }
-
-                z: mouseArea.drag.active ? 1 : 0
-                Loader {
-                    id: dragTarget
-                    active: control.reorderEnabled
-                    onLoaded: {
-                        dragTarget.item.expanded = Qt.binding(() => boxItem.expanded)
-                        dragTarget.item.model = Qt.binding(() => repeater.model.get(index))
-                    }
-                    property int _index: index
-                    opacity: mouseArea.drag.active ? 0.7 : 0
-                    anchors.top: parent.top
-                    anchors.left: parent.left
-                    Drag.active: mouseArea.drag.active
-                    Drag.keys: [...Array(repeater.count).keys()].filter(i => i !== index)
-                    Drag.hotSpot: Qt.point(mouseArea.mouseX, mouseArea.mouseY)
-                    states: State {
-                        when: mouseArea.drag.active
-                        AnchorChanges {
-                            target: dragTarget
-                            anchors {
-                                top: undefined
-                                left: undefined
-                            }
-                        }
-                    }
-
-                    width: boxLoader.width
-                    height: boxLoader.height
-                    sourceComponent: control.boxDelegate
-                    MouseArea {
-                        id: mouseArea
-                        anchors.fill: parent
-                        drag.target: dragTarget
-                        hoverEnabled: true
-                        z: 1
-                        cursorShape: !drag.active ? Qt.ArrowCursor : (boxLoader.contains(
-                                                                          Qt.point(
-                                                                              dragTarget.x + mouseX,
-                                                                              dragTarget.y + mouseY)) ? Qt.ForbiddenCursor : Qt.DragCopyCursor)
-
-                        onReleased: {
-                            if (control.reorderEnabled) {
-                                if (repeater.targetIndex >= -1) {
-                                    const to = Math.max(0, Math.min(repeater.targetIndex,
-                                                                    repeater.count - 1))
-                                    if (index !== to) {
-                                        repeater.model.move(index, to, 1)
-                                        control.reordered(index, to)
-                                    }
-                                }
-                                repeater.targetIndex = -2
-                            }
-                        }
-                        onClicked: {
-                            if (!collapseAnim.running && boxLoader.contains(
-                                        Qt.point(mouseArea.mouseX, mouseArea.mouseY))) {
-                                boxItem.expanded = !boxItem.expanded
-                                control.currentIndex = index
-                            }
-                        }
-                    }
                 }
             }
         }
