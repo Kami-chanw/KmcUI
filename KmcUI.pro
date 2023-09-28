@@ -63,7 +63,8 @@ EFFECTS_FILES += \
     src/imports/KmcUI/Effects/qmldir
 
 DISTFILES += $$KMC_FILES $$WINDOW_FILES $$EFFECTS_FILES $$CONTROLS_FILES \
-    src/imports/KmcUI/Controls/ToolBoxDelegate.qml
+    src/imports/KmcUI/Controls/ToolBoxDelegate.qml \
+    src/imports/KmcUI/KmcRectangle.qml
 
 CONFIG += install_ok
 

@@ -1,7 +1,7 @@
 ﻿import QtQuick
 import KmcUI
 
-Rectangle {
+KmcRectangle {
     id: control
 
     enum TitleButton {
@@ -13,9 +13,7 @@ Rectangle {
 
     property Window window
     property bool buttonEnabled: true
-    property alias titleText: titleText
     property alias buttons: _buttons
-    property alias appIcon: appIcon
     property int titleButton: TitleBar.TitleButton.Close
 
     palette {
@@ -107,26 +105,6 @@ Rectangle {
 
     function moveButton(from, to) {
         buttonModel.move(from, to, 1)
-    }
-
-    Image {
-        id: appIcon
-        anchors.verticalCenter: parent.verticalCenter
-        anchors.left: parent.left
-        anchors.leftMargin: 10
-        width: control.height
-        height: width
-    }
-
-    Text {
-        id: titleText
-        anchors {
-            leftMargin: 15
-            left: appIcon.right
-            verticalCenter: parent.verticalCenter
-        }
-
-        color: control.palette.text
     }
 
     component ButtonAnimData: QtObject {

@@ -2,20 +2,56 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 
-ScrollView {
+
+/**
+ * The model item must contains string title which means the title of a toolbox
+ * If `reorderEnabled` is true, the model must contains function move(from, to, count) to allow ToolBox to move `count` toolboxes from `from` to `to`
+ * The property sourceSelector is a function that accept current item and return a jsobject to content loader,
+ * and will be used when Loader.loaded emits. The structure of return value is { "source": "source.qml", "properties": {}}
+ * You can also use sourceComponentSelector, which also is a function that accept current item but return a Component to  Loader.sourceComponent.
+ * For above funcitonalities, the model must contains function get(index)
+*/
+Flickable {
     id: control
-    //    highlightFollowsCurrentItem: false
     property Component boxDelegate
     property alias model: repeater.model
-    property Component dropAreaItem
+    property alias items: repeater
+    property Component dropAreaItem: Rectangle {
+        color: "#cccccc"
+        opacity: 0.15
+    }
     property Component dropIndicator: Rectangle {
         color: "#cccccc"
         implicitHeight: 2
     }
+    property Transition toggle: Transition {}
+    property Component handle: Rectangle {
+        color: "#2b2b2b"
+        implicitHeight: 1
+    }
+
     property int currentIndex: -1
+    property bool reorderEnabled: true
+    property bool itemResizable: false
+    property var sourceSelector
+    property var sourceComponentSelector
+    clip: true
+    contentHeight: content.height
+    contentWidth: content.width
+    boundsBehavior: Flickable.StopAtBounds
+
+    signal reordered(int from, int to)
+
+    function setItemSource(index, url, properties) {
+        repeater.itemAt(index).contentLoader.setSource(url, properties)
+    }
+
+    function setItemSourceComponent(index, comp) {
+        repeater.itemAt(index).contentLoader.sourceComponent = comp
+    }
 
     Column {
-        anchors.fill: parent
+        id: content
         Repeater {
             id: repeater
 
@@ -28,56 +64,152 @@ ScrollView {
 
             delegate: Item {
                 id: boxItem
-                width: control.implicitWidth
+                width: control.width
                 height: column.height
-                z: mouseArea.drag.active ? 2 : 0
+
+                property alias box: boxLoader.item
+                property alias content: contentLoader.item
+                property alias contentLoader: contentLoader
+                property bool expanded: false
+                z: dragHandler.active ? 5 : 0
+                ShaderEffectSource {
+                    id: dragTarget
+                    sourceItem: boxLoader
+                    height: boxLoader.height
+                    width: boxLoader.width
+                    property int _index: index
+                    opacity: dragHandler.active ? 0.7 : 0
+                    anchors.top: parent.top
+                    anchors.left: parent.left
+                    Drag.active: dragHandler.active
+                    Drag.keys: [...Array(repeater.count).keys()].filter(i => i !== index)
+                    Drag.hotSpot: Qt.point(mouseArea.mouseX, mouseArea.mouseY)
+                    z: dragHandler.active ? 10 : 0
+                    states: State {
+                        when: dragHandler.active
+                        AnchorChanges {
+                            target: dragTarget
+                            anchors {
+                                top: undefined
+                                left: undefined
+                            }
+                        }
+                    }
+                    DragHandler {
+                        id: dragHandler
+
+                        onActiveChanged: {
+                            if (!active) {
+                                if (control.reorderEnabled) {
+                                    if (repeater.targetIndex >= -1) {
+                                        const to = Math.max(0, Math.min(repeater.targetIndex,
+                                                                        repeater.count - 1))
+                                        if (index !== to) {
+                                            repeater.model.move(index, to, 1)
+                                            control.reordered(index, to)
+                                        }
+                                    }
+                                    repeater.targetIndex = -2
+                                }
+                            }
+                        }
+                    }
+
+                    MouseArea {
+                        id: mouseArea
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: !dragHandler.active ? Qt.ArrowCursor : (column.contains(
+                                                                                 Qt.point(
+                                                                                     dragTarget.x + mouseArea.mouseX,
+                                                                                     dragTarget.y + mouseArea.mouseY)) ? Qt.ForbiddenCursor : Qt.DragCopyCursor)
+                    }
+                }
+
                 Column {
                     id: column
+
                     Loader {
                         id: boxLoader
-                        property string title: model.title
-                        property bool expanded: false
-                        width: control.implicitWidth
-                        Binding {
-                            target: boxLoader.item
-                            property: "highlighted"
-                            value: control.currentIndex === index
-                            when: boxLoader.status === Loader.Ready
+                        width: control.width
+
+                        onLoaded: {
+                            boxLoader.item.index = Qt.binding(() => index)
+                            boxLoader.item.content = Qt.binding(() => contentLoader.item)
+                            boxLoader.item.model = repeater.model.get(index)
+                            boxLoader.item.highlighted = Qt.binding(
+                                        () => control.currentIndex === index)
+                            boxItem.expanded = boxLoader.item.expanded
+                            contentLoader.updateSource()
                         }
+
+                        function forceHighlight() {
+                            control.currentIndex = index
+                        }
+
+                        Connections {
+                            target: boxLoader.item
+                            function onExpandedChanged() {
+                                boxItem.expanded = boxLoader.item.expanded
+                            }
+                        }
+
+                        Connections {
+                            target: repeater.model
+                            function onDataChanged(leftTop) {
+                                if (leftTop.row === index) {
+                                    boxLoader.item.model = repeater.model.get(index)
+                                    contentLoader.updateSource()
+                                }
+                            }
+                        }
+
                         sourceComponent: control.boxDelegate
                     }
 
                     Loader {
                         id: contentLoader
-                        sourceComponent: model.content()
-                        width: control.implicitWidth
-                        Binding {
-                            when: !boxLoader.expanded && boxLoader.status === Loader.Ready
-                            target: contentLoader
-                            property: "height"
-                            value: 0
+                        clip: true
+                        function updateSource() {
+                            if (control.sourceComponentSelector) {
+                                contentLoader.sourceComponent = control.sourceComponentSelector(
+                                            index)
+                            } else if (control.sourceSelector) {
+                                const param = control.sourceSelector(index)
+                                contentLoader.setSource(param["source"], param["properties"])
+                            } else
+                                throw new Error("KmcUI.Controls.ToolBox: One of properties sourceComponentSelector and sourceComponent should be initialized.")
                         }
 
-                        Behavior on height {
-                            NumberAnimation {
-                                id: collapseAnim
-                                easing.type: Easing.InOutQuad
+                        width: control.width
+
+                        states: State {
+                            when: !boxItem.expanded && contentLoader.status === Loader.Ready
+                            PropertyChanges {
+                                contentLoader.height: 0
                             }
                         }
+
+                        transitions: control.toggle
+                    }
+                    Loader {
+                        width: control.width
+                        sourceComponent: control.handle
                     }
                 }
 
                 DropArea {
                     id: dropArea
                     anchors.fill: parent
+
                     keys: [index]
 
                     Loader {
                         width: parent.width
-                        height: boxLoader.expanded ? parent.height / 2 : parent.height
-                        y: boxLoader.expanded
+                        height: boxItem.expanded ? parent.height / 2 : parent.height
+                        y: boxItem.expanded
                            && dropArea.drag.y >= parent.height / 2 ? parent.height / 2 : 0
-                        active: dropArea.containsDrag
+                        active: dropArea.containsDrag && control.reorderEnabled
                         sourceComponent: control.dropAreaItem
 
                         property bool containsDrag: dropArea.containsDrag
@@ -85,7 +217,7 @@ ScrollView {
                     Loader {
                         y: dropArea.drag.y < boxLoader.height / 2 ? 0 : boxLoader.height - height
                         width: parent.width
-                        active: dropArea.containsDrag && !boxLoader.expanded
+                        active: dropArea.containsDrag && !boxItem.expanded && control.reorderEnabled
                         sourceComponent: control.dropIndicator
                     }
 
@@ -97,62 +229,6 @@ ScrollView {
                                                repeater.targetIndex++
                                            }
                                        }
-                }
-
-                MouseArea {
-                    id: mouseArea
-                    anchors.fill: parent
-                    drag.target: dragTarget
-                    onReleased: {
-                        if (repeater.targetIndex >= -1)
-                            repeater.model.move(index, Math.max(0, Math.min(repeater.targetIndex,
-                                                                            repeater.count - 1)), 1)
-                        repeater.targetIndex = -2
-                    }
-
-                    onClicked: {
-                        if (!collapseAnim.running && boxLoader.contains(Qt.point(mouseX, mouseY))) {
-                            boxLoader.expanded = !boxLoader.expanded
-                            control.currentIndex = index
-                        }
-                    }
-
-                    Loader {
-                        id: dragTarget
-                        visible: mouseArea.drag.active
-                        property string title: model.title
-                        property bool expanded: false
-                        property int _index: index
-                        opacity: 0.7
-                        anchors {
-                            verticalCenter: parent.verticalCenter
-                            horizontalCenter: parent.horizontalCenter
-                        }
-                        Drag.active: mouseArea.drag.active
-                        Drag.keys: [...Array(repeater.count).keys()].filter(i => i !== index)
-                        states: State {
-                            when: mouseArea.drag.active
-                            AnchorChanges {
-                                target: dragTarget
-                                anchors {
-                                    verticalCenter: undefined
-                                    horizontalCenter: undefined
-                                }
-                            }
-                            PropertyChanges {
-                                dragTarget.x: mouseArea.mouseX
-                                dragTarget.y: mouseArea.mouseY
-                            }
-                        }
-
-                        width: boxLoader.width
-                        height: boxLoader.height
-                        sourceComponent: control.boxDelegate
-
-                        HoverHandler {
-                            cursorShape: Qt.ForbiddenCursor
-                        }
-                    }
                 }
             }
         }

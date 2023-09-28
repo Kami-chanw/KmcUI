@@ -14,6 +14,8 @@ T.ToolTip {
 
     property int cursorSize: 16
     property MouseArea mouseArea
+    property int offsetX: 0
+    property int offsetY: 0
     readonly property bool mouseAreaEnabled: mouseArea?.enabled ?? false
 
     onParentChanged: {
@@ -28,8 +30,8 @@ T.ToolTip {
     }
 
     onAboutToShow: {
-        x = mouseArea.mouseX
-        y = mouseArea.mouseY + cursorSize
+        x = mouseArea.mouseX + offsetX
+        y = mouseArea.mouseY + cursorSize + offsetY
     }
 
     onMouseAreaEnabledChanged: close()
@@ -50,5 +52,4 @@ T.ToolTip {
         text: control.text
         color: control.palette.toolTipText
     }
-
 }

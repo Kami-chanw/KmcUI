@@ -12,12 +12,7 @@ Item {
             sourceItem: root.source
         }
         property var maskSource: ShaderEffectSource {
-            sourceItem: Item {
-                id: mask
-                height: root.source.height
-                width: root.source.width
-                children: root.maskSource
-            }
+            sourceItem: root.maskSource
         }
         fragmentShader: "qrc:/assets/shaders/clipmask.frag.qsb"
     }

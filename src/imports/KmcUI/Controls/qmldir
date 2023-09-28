@@ -1,6 +1,7 @@
 ﻿module KmcUI.Controls
 AnchorToolTip 1.0 AnchorToolTip.qml
 AppBar 1.0 AppBar.qml
+BubbleToolTip 1.0 BubbleToolTip.qml
 MouseToolTip 1.0 MouseToolTip.qml
 KeySequenceText 1.0 KeySequenceText.qml
 KmcTreeView 1.0 KmcTreeView.qml

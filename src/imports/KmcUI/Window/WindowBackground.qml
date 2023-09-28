@@ -35,12 +35,12 @@ Item {
     property bool resizable: false
     property int dragBehavior: WindowBackground.DragWindow
     property alias titleButton: title.titleButton
-    property alias appIcon: title.appIcon
     property alias title: title
     property Item menuBar
+    property Item statusBar
 
     palette {
-        shadow: "#88333333"
+        shadow: "#88222222"
     }
 
     MouseArea {
@@ -79,7 +79,7 @@ Item {
         onExited: cursorShape = Qt.ArrowCursor
 
         onPositionChanged: {
-            var blurSize = 2
+            var blurSize = 3
             edgeFlag = 0
             if (window.visibility !== Window.Maximized && mouseX >= margins - blurSize
                     && mouseX <= width - margins + blurSize
@@ -116,16 +116,16 @@ Item {
         anchors.fill: mainRect
         z: -2
         glowRadius: 5
+        spread: 0.2
         scale: background.scale
         color: control.palette.shadow
-        cornerRadius: glowRadius
+        cornerRadius: background?.radius ?? 0
     }
 
     Item {
         id: mainRect
         anchors.fill: parent
         anchors.margins: control.margins
-        clip: true
 
         TitleBar {
             id: title
@@ -134,7 +134,12 @@ Item {
                 top: parent.top
                 left: parent.left
                 right: parent.right
+                topMargin: background?.border.width ?? 0
+                leftMargin: background?.border.width ?? 0
+                rightMargin: background?.border.width ?? 0
             }
+            leftTopRadius: control.background?.radius ?? 0
+            rightTopRadius: control.background?.radius ?? 0
 
             height: 30
             window: control.window
@@ -163,7 +168,8 @@ Item {
                         top: control.menuBar ? control.menuBar.bottom : title.bottom
                         left: title.left
                         right: title.right
-                        bottom: mainRect.bottom
+                        bottom: control.statusBar ? control.statusBar.top : mainRect.bottom
+                        bottomMargin: background?.border.width ?? 0
                     }
                 }
                 background {
@@ -173,26 +179,23 @@ Item {
                 }
             }
         }
+    }
 
-        layer.enabled: !!control.background.radius
-        layer.effect: ClipMask {
-            // clip elements that are out of background
-            source: mainRect
-            maskSource: Rectangle {
-                width: background.width
-                height: background.height
-                radius: background.radius
-            }
+    onMenuBarChanged: {
+        if (menuBar) {
+            menuBar.parent = mainRect
+            menuBar.anchors.left = title.left
+            menuBar.anchors.top = title.bottom
+            menuBar.anchors.right = title.right
         }
+    }
 
-        Binding {
-            when: menuBar !== undefined
-            control.menuBar.parent: mainRect
-            control.menuBar.anchors {
-                top: title.bottom
-                left: title.left
-                right: title.right
-            }
+    onStatusBarChanged: {
+        if (statusBar) {
+            statusBar.parent = mainRect
+            statusBar.anchors.left = title.left
+            statusBar.anchors.right = title.right
+            statusBar.anchors.bottom = mainRect.bottom
         }
     }
 
