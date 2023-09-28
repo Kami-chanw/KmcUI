@@ -15,13 +15,24 @@ Flickable {
     id: control
     property Component boxDelegate
     property alias model: repeater.model
-    property Component dropAreaItem
+    property alias items: repeater
+    property Component dropAreaItem: Rectangle {
+        color: "#cccccc"
+        opacity: 0.15
+    }
     property Component dropIndicator: Rectangle {
         color: "#cccccc"
         implicitHeight: 2
     }
+    property Transition toggle: Transition {}
+    property Component handle: Rectangle {
+        color: "#2b2b2b"
+        implicitHeight: 1
+    }
+
     property int currentIndex: -1
     property bool reorderEnabled: true
+    property bool itemResizable: false
     property var sourceSelector
     property var sourceComponentSelector
     clip: true
@@ -56,15 +67,16 @@ Flickable {
                 width: control.width
                 height: column.height
 
+                property alias box: boxLoader.item
+                property alias content: contentLoader.item
                 property alias contentLoader: contentLoader
                 property bool expanded: false
-
+                z: dragHandler.active ? 5 : 0
                 ShaderEffectSource {
                     id: dragTarget
                     sourceItem: boxLoader
                     height: boxLoader.height
                     width: boxLoader.width
-                    z: dragHandler.active ? 1 : 0
                     property int _index: index
                     opacity: dragHandler.active ? 0.7 : 0
                     anchors.top: parent.top
@@ -72,7 +84,7 @@ Flickable {
                     Drag.active: dragHandler.active
                     Drag.keys: [...Array(repeater.count).keys()].filter(i => i !== index)
                     Drag.hotSpot: Qt.point(mouseArea.mouseX, mouseArea.mouseY)
-                    Drag.onDragFinished: console.log(456)
+                    z: dragHandler.active ? 10 : 0
                     states: State {
                         when: dragHandler.active
                         AnchorChanges {
@@ -85,10 +97,7 @@ Flickable {
                     }
                     DragHandler {
                         id: dragHandler
-                        cursorShape: !active ? Qt.ArrowCursor : (boxLoader.contains(
-                                                                     Qt.point(
-                                                                         dragTarget.x + mouseArea.mouseX,
-                                                                         dragTarget.y + mouseArea.mouseY)) ? Qt.ForbiddenCursor : Qt.DragCopyCursor)
+
                         onActiveChanged: {
                             if (!active) {
                                 if (control.reorderEnabled) {
@@ -110,28 +119,38 @@ Flickable {
                         id: mouseArea
                         anchors.fill: parent
                         hoverEnabled: true
+                        cursorShape: !dragHandler.active ? Qt.ArrowCursor : (column.contains(
+                                                                                 Qt.point(
+                                                                                     dragTarget.x + mouseArea.mouseX,
+                                                                                     dragTarget.y + mouseArea.mouseY)) ? Qt.ForbiddenCursor : Qt.DragCopyCursor)
                     }
                 }
 
                 Column {
                     id: column
+
                     Loader {
                         id: boxLoader
                         width: control.width
 
                         onLoaded: {
                             boxLoader.item.index = Qt.binding(() => index)
-                            boxLoader.item.expanded = Qt.binding(() => boxItem.expanded)
+                            boxLoader.item.content = Qt.binding(() => contentLoader.item)
+                            boxLoader.item.model = repeater.model.get(index)
                             boxLoader.item.highlighted = Qt.binding(
                                         () => control.currentIndex === index)
-                            boxLoader.item.model = repeater.model.get(index)
+                            boxItem.expanded = boxLoader.item.expanded
                             contentLoader.updateSource()
                         }
 
-                        function toggleContent() {
-                            if (!collapseAnim.running) {
-                                boxItem.expanded = !boxItem.expanded
-                                control.currentIndex = index
+                        function forceHighlight() {
+                            control.currentIndex = index
+                        }
+
+                        Connections {
+                            target: boxLoader.item
+                            function onExpandedChanged() {
+                                boxItem.expanded = boxLoader.item.expanded
                             }
                         }
 
@@ -151,12 +170,11 @@ Flickable {
                     Loader {
                         id: contentLoader
                         clip: true
-
                         function updateSource() {
-                            if (control.sourceComponentSelector !== undefined) {
+                            if (control.sourceComponentSelector) {
                                 contentLoader.sourceComponent = control.sourceComponentSelector(
                                             index)
-                            } else if (control.sourceSelector !== undefined) {
+                            } else if (control.sourceSelector) {
                                 const param = control.sourceSelector(index)
                                 contentLoader.setSource(param["source"], param["properties"])
                             } else
@@ -164,20 +182,19 @@ Flickable {
                         }
 
                         width: control.width
-                        Binding {
-                            when: !boxItem.expanded && contentLoader.status === Loader.Ready
-                            target: contentLoader.item
-                            property: "height"
-                            value: 0
-                        }
 
-                        Behavior on height {
-                            enabled: contentLoader.status === Loader.Ready
-                            NumberAnimation {
-                                id: collapseAnim
-                                easing.type: Easing.InOutQuad
+                        states: State {
+                            when: !boxItem.expanded && contentLoader.status === Loader.Ready
+                            PropertyChanges {
+                                contentLoader.height: 0
                             }
                         }
+
+                        transitions: control.toggle
+                    }
+                    Loader {
+                        width: control.width
+                        sourceComponent: control.handle
                     }
                 }
 
@@ -203,8 +220,6 @@ Flickable {
                         active: dropArea.containsDrag && !boxItem.expanded && control.reorderEnabled
                         sourceComponent: control.dropIndicator
                     }
-
-                    onDropped: console.log(123)
 
                     onPositionChanged: drag => {
                                            repeater.targetIndex = dropArea.drag.y < boxItem.height

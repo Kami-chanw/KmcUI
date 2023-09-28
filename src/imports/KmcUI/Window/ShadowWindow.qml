@@ -20,6 +20,7 @@ Window {
     property alias dragBehavior: bg.dragBehavior
     property alias menuBar: bg.menuBar
     property alias title: bg.title
+    property alias statusBar: bg.statusBar
 
     WindowBackground {
         id: bg

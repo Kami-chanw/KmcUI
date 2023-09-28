@@ -3,15 +3,18 @@ import QtQuick.Controls
 
 ItemDelegate {
     id: control
-
+    property alias enabled: tapHandler.enabled
     TapHandler {
+        id: tapHandler
         onTapped: {
-            toggleContent()
+            expanded = !expanded
+            forceHighlight()
         }
     }
 
-    // the following properties will be initialized by KmcTreeView
+    property bool expanded: false
+    // the following properties will be initialized by ToolBox
     property int index
     property var model
-    property bool expanded
+    property var content
 }

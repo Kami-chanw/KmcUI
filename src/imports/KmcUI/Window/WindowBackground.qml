@@ -37,6 +37,7 @@ Item {
     property alias titleButton: title.titleButton
     property alias title: title
     property Item menuBar
+    property Item statusBar
 
     palette {
         shadow: "#88222222"
@@ -167,7 +168,7 @@ Item {
                         top: control.menuBar ? control.menuBar.bottom : title.bottom
                         left: title.left
                         right: title.right
-                        bottom: mainRect.bottom
+                        bottom: control.statusBar ? control.statusBar.top : mainRect.bottom
                         bottomMargin: background?.border.width ?? 0
                     }
                 }
@@ -186,6 +187,15 @@ Item {
             menuBar.anchors.left = title.left
             menuBar.anchors.top = title.bottom
             menuBar.anchors.right = title.right
+        }
+    }
+
+    onStatusBarChanged: {
+        if (statusBar) {
+            statusBar.parent = mainRect
+            statusBar.anchors.left = title.left
+            statusBar.anchors.right = title.right
+            statusBar.anchors.bottom = mainRect.bottom
         }
     }
 
