@@ -32,22 +32,22 @@ Canvas {
         }
     }
 
-    property BorderGroup border: BorderGroup {
+    readonly property BorderGroup border: BorderGroup {
         id: border
     }
-    property BorderGroup leftBorder: BorderGroup {
+    readonly property BorderGroup leftBorder: BorderGroup {
         color: border.color
         width: border.width
     }
-    property BorderGroup topBorder: BorderGroup {
+    readonly property BorderGroup topBorder: BorderGroup {
         color: border.color
         width: border.width
     }
-    property BorderGroup rightBorder: BorderGroup {
+    readonly property BorderGroup rightBorder: BorderGroup {
         color: border.color
         width: border.width
     }
-    property BorderGroup bottomBorder: BorderGroup {
+    readonly property BorderGroup bottomBorder: BorderGroup {
         color: border.color
         width: border.width
     }

@@ -70,7 +70,8 @@ Flickable {
                 property alias box: boxLoader.item
                 property alias content: contentLoader.item
                 property alias contentLoader: contentLoader
-                property bool expanded: false
+                property var expanded: boxLoader.item.expanded
+                enabled: boxLoader.item.enabled
                 z: dragHandler.active ? 5 : 0
                 ShaderEffectSource {
                     id: dragTarget
@@ -139,19 +140,11 @@ Flickable {
                             boxLoader.item.model = repeater.model.get(index)
                             boxLoader.item.highlighted = Qt.binding(
                                         () => control.currentIndex === index)
-                            boxItem.expanded = boxLoader.item.expanded
                             contentLoader.updateSource()
                         }
 
                         function forceHighlight() {
                             control.currentIndex = index
-                        }
-
-                        Connections {
-                            target: boxLoader.item
-                            function onExpandedChanged() {
-                                boxItem.expanded = boxLoader.item.expanded
-                            }
                         }
 
                         Connections {

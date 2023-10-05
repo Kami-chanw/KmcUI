@@ -3,7 +3,8 @@ import QtQuick.Controls
 
 ItemDelegate {
     id: control
-    property alias enabled: tapHandler.enabled
+
+    property alias enabled: tapHandler.enabled // override ItemDelegate.enabled
     TapHandler {
         id: tapHandler
         onTapped: {

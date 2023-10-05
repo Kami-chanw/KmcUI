@@ -59,7 +59,8 @@ Item {
                         && mouseX <= width - margins && mouseY >= margins
                         && mouseY <= height - margins) {
                     // is in region?
-                    if (dragBehavior === WindowBackground.DragWindow || mouseY <= title.height) {
+                    if (dragBehavior === WindowBackground.DragWindow
+                            || mouseY - margins <= title.height) {
                         window.startSystemMove()
                     }
                 }
@@ -196,6 +197,8 @@ Item {
             statusBar.anchors.left = title.left
             statusBar.anchors.right = title.right
             statusBar.anchors.bottom = mainRect.bottom
+            if (background.border)
+                statusBar.anchors.bottomMargin = Qt.binding(() => background.border.width)
         }
     }
 

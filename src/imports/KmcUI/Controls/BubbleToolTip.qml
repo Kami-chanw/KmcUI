@@ -27,6 +27,16 @@ ToolTip {
         throw new Exception("Invalid location for KmcUI.BubbleToolTip")
     }
 
+    enter: Transition {
+        NumberAnimation {
+            target: control
+            property: "opacity"
+            duration: 80
+            from: 0
+            to: 1
+        }
+    }
+
     implicitWidth: Math.max(implicitBackgroundWidth + leftInset + rightInset, contentWidth
                             + leftPadding + rightPadding) + leftMargin + rightMargin
                    + border.width * 2 + (location === KmcUI.Left
@@ -41,7 +51,7 @@ ToolTip {
         property int width
         property int position
     }
-    property ArrowData arrow: ArrowData {
+    readonly property ArrowData arrow: ArrowData {
         height: 5
         width: 5
         position: {
